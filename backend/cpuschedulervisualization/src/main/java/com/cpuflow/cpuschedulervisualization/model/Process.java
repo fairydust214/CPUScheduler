@@ -9,7 +9,7 @@ import java.util.UUID;
 @Table(name="Processes")
 public class Process implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // generates and increments the value automatically
+    @GeneratedValue(strategy = GenerationType.UUID) // generates and increments the value automatically
     @Column(nullable = false, updatable = false)
     private UUID id;
 
@@ -28,10 +28,10 @@ public class Process implements Serializable {
     @Column(nullable = false)
     private int duration;
     @Column (nullable = true)
-    private ThreadStatus status;
+    private ProcessStatus status;
 
     public Process(){}
-    public Process(UUID id, Thread thread, String name, int arrivalTime, int deadline, int duration, ThreadStatus status) {
+    public Process(UUID id, Thread thread, String name, int arrivalTime, int deadline, int duration, ProcessStatus status) {
         this.id = id;
         this.thread = thread;
         this.name = name;
@@ -89,11 +89,11 @@ public class Process implements Serializable {
         this.duration = duration;
     }
 
-    public ThreadStatus getStatus() {
+    public ProcessStatus getStatus() {
         return status;
     }
 
-    public void setStatus(ThreadStatus status) {
+    public void setStatus(ProcessStatus status) {
         this.status = status;
     }
 

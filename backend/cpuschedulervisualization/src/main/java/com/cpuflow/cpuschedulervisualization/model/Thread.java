@@ -10,7 +10,7 @@ import java.util.UUID;
 public class Thread {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // generates and increments the value automatically
+    @GeneratedValue(strategy = GenerationType.UUID) // generates and increments the value automatically
     @Column(nullable = false, updatable = false)
     private UUID id;
 

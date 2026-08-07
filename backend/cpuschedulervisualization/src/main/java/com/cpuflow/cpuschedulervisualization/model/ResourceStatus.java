@@ -1,4 +1,6 @@
 package com.cpuflow.cpuschedulervisualization.model;
 
-public class Resources {
+public enum ResourceStatus {
+    TAKEN,
+    FREE
 }
