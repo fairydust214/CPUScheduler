@@ -1,0 +1,6 @@
+|    DATE   |  Time     |Comment
+|2026-08-07 |02:00:00   | Implemented Basic Backend Structure
+
+
+
+Total: 2h
