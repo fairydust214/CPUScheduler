@@ -1,0 +1,7 @@
+@for (resource of myResources(); track resource.id) {
+  <div>
+    <div>{{ resource.name }}</div>
+  </div>
+} @empty {
+  <p>No resource found</p>
+}

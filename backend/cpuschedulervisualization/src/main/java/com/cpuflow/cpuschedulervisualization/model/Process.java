@@ -15,7 +15,7 @@ public class Process implements Serializable {
 
 
     @ManyToOne
-    @JoinColumn(name = "thread_id", nullable = false)
+    @JoinColumn(name = "thread_id", nullable = true) // TODO: Correct version @JoinColumn(name = "thread_id", nullable = false)
     private Thread thread;
 
 
