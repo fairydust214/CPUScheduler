@@ -1,6 +1,6 @@
 package com.cpuflow.cpuschedulervisualization.model;
 
-public enum ProcessStatus {
+public enum TaskStatus {
     RUNNING,
     WAITING,
     BLOCKED,

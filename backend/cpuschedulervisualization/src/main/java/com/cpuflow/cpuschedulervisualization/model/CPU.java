@@ -6,8 +6,8 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name="Thread")
-public class Thread {
+@Table(name="CPUs")
+public class CPU {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID) // generates and increments the value automatically
@@ -15,8 +15,16 @@ public class Thread {
     private UUID id;
 
 
-    @OneToMany(mappedBy = "thread")
-    private Set<Process> processSet;
+    @OneToMany(mappedBy = "cpu")
+    private Set<Task> taskSet;
+
+
+
+    @ManyToOne
+    @JoinColumn(name = "timenode_id", nullable = true)
+    private TimeNode timenode;
+
+
 
 
 }
