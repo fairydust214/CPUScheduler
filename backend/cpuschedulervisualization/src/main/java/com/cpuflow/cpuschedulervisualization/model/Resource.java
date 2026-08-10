@@ -21,4 +21,59 @@ public class Resource implements Serializable {
 
     @OneToMany(mappedBy = "resource")
     private List<ResourceRequest> resourceRequests;
+
+    @Transient
+    private ResourceStatus status;
+
+    public Resource(UUID id, String name, Integer priorityCeiling, List<ResourceRequest> resourceRequests, ResourceStatus status) {
+        this.id = id;
+        this.name = name;
+        this.priorityCeiling = priorityCeiling;
+        this.resourceRequests = resourceRequests;
+        this.status = status;
+    }
+
+    public Resource() {
+
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getPriorityCeiling() {
+        return priorityCeiling;
+    }
+
+    public void setPriorityCeiling(Integer priorityCeiling) {
+        this.priorityCeiling = priorityCeiling;
+    }
+
+    public List<ResourceRequest> getResourceRequests() {
+        return resourceRequests;
+    }
+
+    public void setResourceRequests(List<ResourceRequest> resourceRequests) {
+        this.resourceRequests = resourceRequests;
+    }
+
+    public ResourceStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ResourceStatus status) {
+        this.status = status;
+    }
 }

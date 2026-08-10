@@ -26,4 +26,56 @@ public class ResourceRequest implements Serializable {
 
     @Column(nullable = false)
     private int duration;
+
+    public ResourceRequest(UUID id, Task task, Resource resource, int startOffset, int duration) {
+        this.id = id;
+        this.task = task;
+        this.resource = resource;
+        this.startOffset = startOffset;
+        this.duration = duration;
+    }
+
+    public ResourceRequest() {
+
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public Task getTask() {
+        return task;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
+    }
+
+    public Resource getResource() {
+        return resource;
+    }
+
+    public void setResource(Resource resource) {
+        this.resource = resource;
+    }
+
+    public int getStartOffset() {
+        return startOffset;
+    }
+
+    public void setStartOffset(int startOffset) {
+        this.startOffset = startOffset;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
 }
