@@ -2,7 +2,6 @@ package com.cpuflow.cpuschedulervisualization.APIs;
 
 import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.ResourceDetailedDTO;
 import com.cpuflow.cpuschedulervisualization.service.ResourceService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/task")
+@RequestMapping("/resource")
 @CrossOrigin(origins = "http://localhost:4200")
 public class ResourceResource {
 
@@ -29,7 +28,7 @@ public class ResourceResource {
         return new ResponseEntity<>(resources, HttpStatus.OK);
     }
     @GetMapping("/{id}")
-    public ResponseEntity<ResourceDetailedDTO> getById(@PathVariable("id")UUID id){
+    public ResponseEntity<ResourceDetailedDTO> getResourceById(@PathVariable("id")UUID id){
         ResourceDetailedDTO result = this.resourceService.getResourceByID(id);
         return ResponseEntity.ok(result);
     }

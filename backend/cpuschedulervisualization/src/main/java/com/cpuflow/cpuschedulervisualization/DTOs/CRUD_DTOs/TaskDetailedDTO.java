@@ -14,9 +14,7 @@ public class TaskDetailedDTO {
     private int deadline;
     private Integer priority;
     private List<ResourceRequestDTO> resourceRequests;
-    public TaskDetailedDTO(UUID id, String name, TaskStatus status){
 
-    }
     public TaskDetailedDTO(UUID id, String name, TaskStatus status, int arrivalTime, int duration,
                            int deadline, Integer priority, List<ResourceRequestDTO> resourceRequests) {
         this.id = id;
