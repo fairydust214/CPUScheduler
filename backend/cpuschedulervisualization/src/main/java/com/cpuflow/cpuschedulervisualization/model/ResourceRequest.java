@@ -22,8 +22,8 @@ public class ResourceRequest implements Serializable {
     private Resource resource;
 
     @Column(nullable = false)
-    private int startOffset;      // When (relative to task start) resource is needed
+    private int startOffset;
 
     @Column(nullable = false)
-    private int duration;         // How long the resource is needed
+    private int duration;
 }

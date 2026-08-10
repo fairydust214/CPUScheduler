@@ -7,38 +7,26 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name="Tasks")
+@Table(name = "tasks")
 public class Task implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID) // generates and increments the value automatically
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column (nullable = true) // Strings are nullable per default
     private String name;
 
-
-    @ManyToOne
-    @JoinColumn(name = "cpu_id", nullable = true) // TODO: Correct version @JoinColumn(name = "cpu_id", nullable = false)
-    private CPU cpu;
-
-
-    // Timing
     @Column(nullable = false)
     private int arrivalTime;
-    @Column(nullable = false)
-    private int startTime;
     @Column(nullable = false)
     private int duration;
     @Column(nullable = false)
     private int deadline;
-
     @Column(nullable = true)
-    private Integer priority; // for Priority Ceiling
+    private Integer priority;
 
-    @Column
     @OneToMany(mappedBy = "task")
-    private List<ResourceRequest> resourceRequest;
+    private List<ResourceRequest> resourceRequests;
 
 
 
@@ -46,7 +34,8 @@ public class Task implements Serializable {
     private int remainingTime;
     @Transient
     private TaskStatus status;
-
+    @Transient
+    private int startTime;
     @Transient
     private int completionTime;
     @Transient
@@ -60,10 +49,9 @@ public class Task implements Serializable {
 
     public Task(){}
 
-    public Task(UUID id, String name, CPU cpu, int arrivalTime, int duration, int deadline, int priority) {
+    public Task(UUID id, String name, int arrivalTime, int duration, int deadline, int priority) {
         this.id = id;
         this.name = name;
-        this.cpu = cpu;
         this.arrivalTime = arrivalTime;
         this.duration = duration;
         this.deadline = deadline;

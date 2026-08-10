@@ -14,21 +14,11 @@ public class Resource implements Serializable {
     @Column(nullable = false, updatable = false)
     private UUID id;
 
-    @Column(nullable = true)
     private String name;
 
-    // Priority Ceiling Protocol
     @Column(nullable = true)
-    private Integer priorityCeiling;  // Highest priority of any task that uses it
+    private Integer priorityCeiling;
 
-    // Which tasks need this resource (and when)
     @OneToMany(mappedBy = "resource")
     private List<ResourceRequest> resourceRequests;
-
-    // Runtime state (for simulation, not persisted OR separate column)
-    @Transient                        // Not saved to DB — only used during simulation
-    private UUID heldByTaskId;
-
-    @Transient
-    private ResourceStatus status;    // FREE, LOCKED
 }
