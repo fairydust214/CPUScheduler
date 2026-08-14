@@ -11,16 +11,20 @@ public class ResourceDetailedDTO {
     private Integer priorityCealing;
     private List<ResourceRequestDTO> resourceRequestDTOList;
     private ResourceStatus status;
+    private UUID scenarioDTOID;
 
     public ResourceDetailedDTO() {
     }
 
-    public ResourceDetailedDTO(UUID id, String name, Integer priorityCealing, List<ResourceRequestDTO> resourceRequestDTOList, ResourceStatus status) {
+    public ResourceDetailedDTO(UUID id, String name, Integer priorityCealing,
+                               List<ResourceRequestDTO> resourceRequestDTOList,
+                               ResourceStatus status, UUID scenarioDTOID) {
         this.id = id;
         this.name = name;
         this.priorityCealing = priorityCealing;
         this.resourceRequestDTOList = resourceRequestDTOList;
         this.status = status;
+        this.scenarioDTOID = scenarioDTOID;
     }
 
     public UUID getId() {
@@ -61,5 +65,13 @@ public class ResourceDetailedDTO {
 
     public void setStatus(ResourceStatus status) {
         this.status = status;
+    }
+
+    public UUID getScenarioDTOID() {
+        return scenarioDTOID;
+    }
+
+    public void setScenarioDTOID(UUID scenarioDTOID) {
+        this.scenarioDTOID = scenarioDTOID;
     }
 }

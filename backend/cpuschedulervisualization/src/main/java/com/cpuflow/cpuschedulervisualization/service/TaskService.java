@@ -76,7 +76,7 @@ public class TaskService {
     }
 
 
-    private TaskDetailedDTO convertToDTO(Task task) {
+    public static TaskDetailedDTO convertToDTO(Task task) {
         List<ResourceRequest> listWithResources = task.getResourceRequests();
         List<ResourceRequestDTO> listWithResourceDTOs = new LinkedList<>();
         for (ResourceRequest req: listWithResources){
@@ -84,7 +84,8 @@ public class TaskService {
         }
 
         return new TaskDetailedDTO(task.getId(), task.getName(), task.getStatus(), task.getArrivalTime(),
-                task.getDuration(),task.getDeadline(),task.getPriority(),listWithResourceDTOs);
+                task.getDuration(),task.getDeadline(),task.getPriority(),listWithResourceDTOs,
+                task.getScenario().getId());
     }
     private Task convertToEntity(TaskDetailedDTO dto) {
         Task currentTask = new Task();

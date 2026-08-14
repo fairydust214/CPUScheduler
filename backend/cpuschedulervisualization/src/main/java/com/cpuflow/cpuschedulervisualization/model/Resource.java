@@ -1,6 +1,7 @@
 package com.cpuflow.cpuschedulervisualization.model;
 
 import jakarta.persistence.*;
+import org.yaml.snakeyaml.nodes.ScalarNode;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,15 +23,22 @@ public class Resource implements Serializable {
     @OneToMany(mappedBy = "resource")
     private List<ResourceRequest> resourceRequests;
 
+    @ManyToOne
+    @JoinColumn(name = "scenario_id", nullable = false)
+    private Scenario scenario;
+
     @Transient
     private ResourceStatus status;
 
-    public Resource(UUID id, String name, Integer priorityCeiling, List<ResourceRequest> resourceRequests, ResourceStatus status) {
+    public Resource(UUID id, String name, Integer priorityCeiling, List<ResourceRequest> resourceRequests,
+                    ResourceStatus status,
+                    Scenario scenario) {
         this.id = id;
         this.name = name;
         this.priorityCeiling = priorityCeiling;
         this.resourceRequests = resourceRequests;
         this.status = status;
+        this.scenario = scenario;
     }
 
     public Resource() {
@@ -75,5 +83,13 @@ public class Resource implements Serializable {
 
     public void setStatus(ResourceStatus status) {
         this.status = status;
+    }
+
+    public Scenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(Scenario scenario) {
+        this.scenario = scenario;
     }
 }

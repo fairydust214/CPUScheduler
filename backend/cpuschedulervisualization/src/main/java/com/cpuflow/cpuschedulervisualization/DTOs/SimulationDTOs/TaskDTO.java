@@ -8,4 +8,5 @@ public class TaskDTO {
     private UUID id;
     private String name;
     private TaskStatus status;
+    private int remainingTime;
 }

@@ -3,7 +3,7 @@ package com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs;
 import java.util.List;
 
 public class SimulationResultDTO {
-    private String algorithm;
+    private SimulationType algorithm;
     private Integer quantum;
     private int totalTime;
     private List<TimeNodeDTO> timeline;

@@ -2,6 +2,7 @@
 |2026-08-07 |02:00:00   | Implemented Basic Backend Structure
 |2026-08-09 |02:00:00   | Implemented Basic Frontend Structure
 |2026-08-09 |04:07:17	| Implemented CRUD operartions for Tasks, Resources, ResourceRequests, next step Algorithms
+|2026-08-14 |00:58:02	| Created Scenario (partially)
 
 
-Total: 4h
+Total: 09:05:19H

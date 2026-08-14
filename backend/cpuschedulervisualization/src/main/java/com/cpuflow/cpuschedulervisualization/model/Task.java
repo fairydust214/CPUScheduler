@@ -28,6 +28,10 @@ public class Task implements Serializable {
     @OneToMany(mappedBy = "task")
     private List<ResourceRequest> resourceRequests;
 
+    @ManyToOne
+    @JoinColumn(name = "scenario_id", nullable = false)
+    private Scenario scenario;
+
     @Transient
     private int remainingTime;
     @Transient
@@ -47,13 +51,14 @@ public class Task implements Serializable {
 
     public Task(){}
 
-    public Task(UUID id, String name, int arrivalTime, int duration, int deadline, Integer priority) {
+    public Task(UUID id, String name, int arrivalTime, int duration, int deadline, Integer priority, Scenario scenario) {
         this.id = id;
         this.name = name;
         this.arrivalTime = arrivalTime;
         this.duration = duration;
         this.deadline = deadline;
         this.priority = priority;
+        this.scenario =scenario;
     }
 
     public UUID getId() {
@@ -166,6 +171,14 @@ public class Task implements Serializable {
 
     public void setResponseTime(int responseTime) {
         this.responseTime = responseTime;
+    }
+
+    public Scenario getScenario() {
+        return scenario;
+    }
+
+    public void setScenario(Scenario scenario) {
+        this.scenario = scenario;
     }
 }
 

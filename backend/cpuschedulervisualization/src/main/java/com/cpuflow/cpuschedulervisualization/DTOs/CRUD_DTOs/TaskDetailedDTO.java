@@ -14,9 +14,12 @@ public class TaskDetailedDTO {
     private int deadline;
     private Integer priority;
     private List<ResourceRequestDTO> resourceRequests;
+    private UUID scenarioDTOID;
+
 
     public TaskDetailedDTO(UUID id, String name, TaskStatus status, int arrivalTime, int duration,
-                           int deadline, Integer priority, List<ResourceRequestDTO> resourceRequests) {
+                           int deadline, Integer priority, List<ResourceRequestDTO> resourceRequests,
+                           UUID scenarioDTO) {
         this.id = id;
         this.name = name;
         this.status = status;
@@ -25,6 +28,7 @@ public class TaskDetailedDTO {
         this.deadline = deadline;
         this.priority = priority;
         this.resourceRequests = resourceRequests;
+        this.scenarioDTOID = scenarioDTO;
     }
 
     public UUID getId() {

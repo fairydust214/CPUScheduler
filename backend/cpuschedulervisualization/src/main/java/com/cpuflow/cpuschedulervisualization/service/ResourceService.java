@@ -6,6 +6,7 @@ import com.cpuflow.cpuschedulervisualization.model.Resource;
 import com.cpuflow.cpuschedulervisualization.model.ResourceRequest;
 import com.cpuflow.cpuschedulervisualization.model.Task;
 import com.cpuflow.cpuschedulervisualization.repo.ResourceRepo;
+import com.cpuflow.cpuschedulervisualization.repo.ScenarioRepo;
 import com.cpuflow.cpuschedulervisualization.repo.TaskRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,11 +25,14 @@ public class ResourceService {
 
     private final ResourceRepo resourceRepo;
     private final TaskRepo taskRepo;
+    private final ScenarioRepo scenarioRepo;
+
 
     @Autowired
-    public ResourceService(ResourceRepo resourceRepo, TaskRepo taskRepo) {
+    public ResourceService(ResourceRepo resourceRepo, TaskRepo taskRepo, ScenarioRepo scenarioRepo) {
         this.resourceRepo = resourceRepo;
         this.taskRepo = taskRepo;
+        this.scenarioRepo = scenarioRepo;
     }
 
     public ResourceDetailedDTO createResource(ResourceDetailedDTO resourceDetailedDTO){
@@ -86,6 +90,9 @@ public class ResourceService {
         newResource.setName(resourceDetailedDTO.getName());
         newResource.setPriorityCeiling(resourceDetailedDTO.getPriorityCealing());
         newResource.setStatus(resourceDetailedDTO.getStatus());
+        newResource.setScenario(this.scenarioRepo.findById(resourceDetailedDTO.getScenarioDTOID())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario not found with id: "
+                        + resourceDetailedDTO.getScenarioDTOID()))); //TODO: this can cause problems
 
 
         if(resourceDetailedDTO.getResourceRequestDTOList() != null ){
@@ -110,12 +117,13 @@ public class ResourceService {
         return newResource;
     }
 
-    private ResourceDetailedDTO entityToDto(Resource resource) {
+    public static ResourceDetailedDTO entityToDto(Resource resource) {
         ResourceDetailedDTO rDto = new ResourceDetailedDTO();
         rDto.setId(resource.getId());
         rDto.setName(resource.getName());
         rDto.setPriorityCealing(resource.getPriorityCeiling());
         rDto.setStatus(resource.getStatus());
+        rDto.setScenarioDTOID(resource.getScenario().getId());
 
 
         if (resource.getResourceRequests() != null){
