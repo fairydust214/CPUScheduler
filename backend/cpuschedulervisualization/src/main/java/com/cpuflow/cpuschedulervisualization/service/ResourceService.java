@@ -24,21 +24,19 @@ public class ResourceService {
 
 
     private final ResourceRepo resourceRepo;
-    private final TaskRepo taskRepo;
-    private final ScenarioRepo scenarioRepo;
+    private final DtoMapper mapper;
 
 
     @Autowired
-    public ResourceService(ResourceRepo resourceRepo, TaskRepo taskRepo, ScenarioRepo scenarioRepo) {
+    public ResourceService(ResourceRepo resourceRepo, DtoMapper mapper) {
         this.resourceRepo = resourceRepo;
-        this.taskRepo = taskRepo;
-        this.scenarioRepo = scenarioRepo;
+        this.mapper = mapper;
     }
 
     public ResourceDetailedDTO createResource(ResourceDetailedDTO resourceDetailedDTO){
-        Resource toSave = dtoToEntity(resourceDetailedDTO);
+        Resource toSave = this.mapper.toEntity(resourceDetailedDTO);
         toSave = this.resourceRepo.save(toSave);
-        ResourceDetailedDTO newDto = entityToDto(toSave);
+        ResourceDetailedDTO newDto = this.mapper.entityToDto(toSave);
         return newDto;
     }
 
@@ -46,7 +44,7 @@ public class ResourceService {
         Resource foundResource = resourceRepo.findById(id).orElseThrow(()-> new ResponseStatusException(
                 HttpStatus.NOT_FOUND, "Resource not found with id: " + id
         ));
-        ResourceDetailedDTO dto = entityToDto(foundResource);
+        ResourceDetailedDTO dto = this.mapper.entityToDto(foundResource);
         return dto;
     }
 
@@ -54,7 +52,7 @@ public class ResourceService {
         List<Resource> listWithResources = this.resourceRepo.findAll();
         List<ResourceDetailedDTO> listWithDtos = new LinkedList<>();
         for(Resource r: listWithResources){
-            listWithDtos.add(entityToDto(r));
+            listWithDtos.add(this.mapper.entityToDto(r));
         }
         return listWithDtos;
     }
@@ -64,16 +62,9 @@ public class ResourceService {
                 HttpStatus.NOT_FOUND, "Resource to update not found with id: " + id
         ));
 
-        Resource temp = dtoToEntity(resourceDetailedDTO);
-
-        foundResource.setName(resourceDetailedDTO.getName());
-        foundResource.setPriorityCeiling(resourceDetailedDTO.getPriorityCealing());
-        foundResource.setStatus(resourceDetailedDTO.getStatus());
-        foundResource.setResourceRequests(temp.getResourceRequests());
-
-
-        ResourceDetailedDTO result = entityToDto(this.resourceRepo.save(foundResource));
-        return result;
+        this.mapper.updateResource(foundResource,resourceDetailedDTO);
+        Resource saved = this.resourceRepo.save(foundResource);
+        return this.mapper.entityToDto(saved);
     }
 
     public void deleteResource (UUID id){
@@ -81,61 +72,15 @@ public class ResourceService {
                 HttpStatus.NOT_FOUND, "Resource to update not found with id: " + id
         ));
 
+        // because of orpahnRemoval, RR is delted
+        for (ResourceRequest rr : foundResource.getResourceRequests()) {
+            rr.getTask().getResourceRequests().remove(rr);
+        }
+
+
         this.resourceRepo.delete(foundResource);
     }
 
-    private Resource dtoToEntity(ResourceDetailedDTO resourceDetailedDTO){
-        Resource newResource = new Resource();
-        newResource.setId(resourceDetailedDTO.getId());
-        newResource.setName(resourceDetailedDTO.getName());
-        newResource.setPriorityCeiling(resourceDetailedDTO.getPriorityCealing());
-        newResource.setStatus(resourceDetailedDTO.getStatus());
-        newResource.setScenario(this.scenarioRepo.findById(resourceDetailedDTO.getScenarioDTOID())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario not found with id: "
-                        + resourceDetailedDTO.getScenarioDTOID()))); //TODO: this can cause problems
 
-
-        if(resourceDetailedDTO.getResourceRequestDTOList() != null ){
-            List<ResourceRequestDTO> dtoLinkedList = resourceDetailedDTO.getResourceRequestDTOList();
-            List<ResourceRequest> newList = new LinkedList<>();
-            for(ResourceRequestDTO rrDTO: dtoLinkedList){
-                ResourceRequest newRR = new ResourceRequest();
-                UUID taskID = rrDTO.getTaskID();
-                Task task = taskRepo.findById(taskID)
-                        .orElseThrow(() -> new ResponseStatusException(
-                                HttpStatus.NOT_FOUND, "Task not found with id: " + taskID
-                        ));
-                newRR.setTask(task);
-                newRR.setResource(newResource);
-                newRR.setStartOffset(rrDTO.getStartOffset());
-                newRR.setDuration(rrDTO.getDuration());
-                newList.add(newRR);
-            }
-            newResource.setResourceRequests(newList);
-
-        }
-        return newResource;
-    }
-
-    public static ResourceDetailedDTO entityToDto(Resource resource) {
-        ResourceDetailedDTO rDto = new ResourceDetailedDTO();
-        rDto.setId(resource.getId());
-        rDto.setName(resource.getName());
-        rDto.setPriorityCealing(resource.getPriorityCeiling());
-        rDto.setStatus(resource.getStatus());
-        rDto.setScenarioDTOID(resource.getScenario().getId());
-
-
-        if (resource.getResourceRequests() != null){
-            List<ResourceRequest> rrList = resource.getResourceRequests();
-            List<ResourceRequestDTO> newList = new LinkedList<>();
-            for(ResourceRequest rr: rrList){
-                newList.add(ResourceRequestService.resourceRequestEntityToDTO(rr));
-            }
-            rDto.setResourceRequestDTOList(newList);
-        }
-        return rDto;
-
-    }
 
 }

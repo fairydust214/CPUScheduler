@@ -25,7 +25,7 @@ public class Task implements Serializable {
     @Column(nullable = true)
     private Integer priority;
 
-    @OneToMany(mappedBy = "task")
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ResourceRequest> resourceRequests;
 
     @ManyToOne

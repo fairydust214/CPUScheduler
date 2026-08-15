@@ -94,4 +94,12 @@ public class TaskDetailedDTO {
     public void setResourceRequests(List<ResourceRequestDTO> resourceRequests) {
         this.resourceRequests = resourceRequests;
     }
+
+    public UUID getScenarioDTOID() {
+        return scenarioDTOID;
+    }
+
+    public void setScenarioDTOID(UUID scenarioDTOID) {
+        this.scenarioDTOID = scenarioDTOID;
+    }
 }
