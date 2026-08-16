@@ -6,13 +6,15 @@ public class SimulationResultDTO {
     private SimulationType algorithm;
     private Integer quantum;
     private int totalTime;
-    private List<TimeNodeDTO> timeline;
+
 
     // Metrics
     private Double avgWaitingTime;
     private Double avgTurnaroundTime;
     private Double cpuUtilization;
     private Integer missedDeadlines;
+
+    private List<TimeNodeDTO> timeline;
 
     public SimulationResultDTO() {
     }

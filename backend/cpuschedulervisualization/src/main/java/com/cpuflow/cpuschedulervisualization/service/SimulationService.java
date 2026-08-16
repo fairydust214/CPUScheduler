@@ -90,17 +90,18 @@ public class SimulationService {
             totalWaitingTime += waitingTimeTask;
             totalTurnaround += turnaroundTimeTask;
 
-            if(completion > task.getArrivalTime() + task.getDeadline()){
+            if(completion > task.getDeadline()){
                 missedDeadlines++;
             }
         }
         int numberOfTasks = allTasks.size();
         resultDTO.setTotalTime(currentTime);
-        resultDTO.setTimeline(timeline);
+
         resultDTO.setAvgWaitingTime((double) totalWaitingTime / numberOfTasks);
         resultDTO.setAvgTurnaroundTime((double) totalTurnaround / numberOfTasks);
-        resultDTO.setCpuUtilization((double) (utilizedTime / currentTime) *100);
+        resultDTO.setCpuUtilization((double) utilizedTime / currentTime *100);
         resultDTO.setMissedDeadlines(missedDeadlines);
+        resultDTO.setTimeline(timeline);
         return resultDTO;
 
     }
