@@ -89,7 +89,7 @@ public class ScenarioService {
             LinkedList<Task> taskList = new LinkedList<>();
 
             for(TaskDetailedDTO tDTO : dtoList){
-                taskList.add(this.mapper.toEntity(tDTO));
+                taskList.add(this.mapper.toEntity(tDTO,scenario));
             }
             scenario.setTasks(taskList);
         }

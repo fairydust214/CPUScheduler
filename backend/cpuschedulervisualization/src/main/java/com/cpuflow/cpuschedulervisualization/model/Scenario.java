@@ -21,11 +21,11 @@ public class Scenario implements Serializable {
 
     @Column()
     @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private LinkedList<Task> tasks = new LinkedList<>();
+    private List<Task> tasks = new LinkedList<>();
 
     @Column
     @OneToMany(mappedBy = "scenario", cascade = CascadeType.ALL, orphanRemoval = true)
-    private LinkedList<Resource> resources = new LinkedList<>();
+    private List<Resource> resources = new LinkedList<>();
 
     public Scenario() {}
 
