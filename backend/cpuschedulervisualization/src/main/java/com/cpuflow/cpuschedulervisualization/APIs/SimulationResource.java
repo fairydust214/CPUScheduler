@@ -27,4 +27,11 @@ public class SimulationResource {
         SimulationResultDTO resultDTO = this.simulationService.createFCFS(id);
         return resultDTO;
     }
+
+    @GetMapping("/{id}")
+    public SimulationResultDTO createRoundRobin(@PathVariable UUID id,
+                                                @RequestParam(defaultValue = "2") int quantum){
+        SimulationResultDTO resultDTO = this.simulationService.createRoundRobin(id, quantum);
+        return resultDTO;
+    }
 }

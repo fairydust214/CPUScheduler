@@ -106,6 +106,90 @@ public class SimulationService {
 
     }
 
+    public SimulationResultDTO createRoundRobin(UUID id, int quantum){
+        Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for Round Robin not found with id:"));
+
+        LinkedList<Task> waitingToArrive = new LinkedList<>(scenario.getTasks());
+        waitingToArrive.sort(Comparator.comparingInt(Task::getArrivalTime));
+
+        for(Task task: waitingToArrive){
+            task.setRemainingTime(task.getDuration());
+        }
+
+        SimulationResultDTO resultDTO = new SimulationResultDTO();
+        resultDTO.setAlgorithm(SimulationType.RR);
+        resultDTO.setQuantum(quantum);
+
+        List<TimeNodeDTO> timeLine = new ArrayList<>();
+        Map<UUID, Integer> staringTimes = new HashMap<>();
+        Map<UUID, Integer> completionTimes = new HashMap<>();
+
+        LinkedList<Task> readyQueue = new LinkedList<>();
+        int currentTime = 0;
+        int busyTicks = 0;
+
+        while(!waitingToArrive.isEmpty() || !readyQueue.isEmpty()){
+            while(!waitingToArrive.isEmpty() && waitingToArrive.peek().getArrivalTime()<= currentTime){
+                readyQueue.add(waitingToArrive.poll());
+            }
+            //Idle state
+            if(readyQueue.isEmpty()){
+                timeLine.add(new TimeNodeDTO(currentTime,null));
+                currentTime++;
+                continue;
+            }
+            Task current = readyQueue.poll();
+            staringTimes.putIfAbsent(current.getId(),currentTime);
+
+            int runTime = Math.min(quantum,current.getRemainingTime());
+
+            for(int t = 0; t<runTime; t++){
+                current.setRemainingTime((current.getRemainingTime()-1));
+                busyTicks++;
+                timeLine.add(new TimeNodeDTO(currentTime,
+                        new TaskDTO(current.getId(),current.getName(),
+                                TaskStatus.RUNNING,current.getRemainingTime())));
+                currentTime++;
+
+                while(!waitingToArrive.isEmpty() && waitingToArrive.peek().getArrivalTime()<=currentTime){
+                    readyQueue.add(waitingToArrive.poll());
+                }
+
+            }
+            if(current.getRemainingTime() > 0){
+                readyQueue.add(current);
+            } else {
+                completionTimes.put(current.getId(),currentTime);
+            }
+        }
+
+        List<Task> allTasks = new LinkedList<>(scenario.getTasks());
+        int totalWaiting = 0;
+        int totalTurnaround = 0;
+        int missedDeadlines = 0;
+
+        for(Task task: allTasks){
+            int completion = completionTimes.getOrDefault(task.getId(),0);
+            totalWaiting+=(completion - task.getArrivalTime() - task.getDuration());
+            totalTurnaround+= (completion - task.getArrivalTime());
+
+            if(completion > task.getArrivalTime() + task.getDeadline()){
+                missedDeadlines++;
+            }
+        }
+
+        int numberOfTasks = allTasks.size();
+        resultDTO.setTotalTime(currentTime);
+        resultDTO.setTimeline(timeLine);
+        resultDTO.setAvgWaitingTime((double) totalWaiting / numberOfTasks);
+        resultDTO.setAvgTurnaroundTime((double) totalTurnaround / numberOfTasks);
+        resultDTO.setCpuUtilization((double) busyTicks/currentTime *100);
+        resultDTO.setMissedDeadlines(missedDeadlines);
+
+        return resultDTO;
+
+    }
     /*
     public SimulationResultDTO createFCFS(UUID id){
         Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(()->
