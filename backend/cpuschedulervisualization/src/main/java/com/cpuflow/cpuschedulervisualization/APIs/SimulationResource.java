@@ -22,16 +22,23 @@ public class SimulationResource {
         this.simulationService = simulationService;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("FCFS/{id}")
     public SimulationResultDTO createFCFS(@PathVariable UUID id){
         SimulationResultDTO resultDTO = this.simulationService.createFCFS(id);
         return resultDTO;
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("RR/{id}")
     public SimulationResultDTO createRoundRobin(@PathVariable UUID id,
                                                 @RequestParam(defaultValue = "2") int quantum){
         SimulationResultDTO resultDTO = this.simulationService.createRoundRobin(id, quantum);
         return resultDTO;
     }
+
+    @GetMapping("EDF/{id}")
+    public SimulationResultDTO createEDF(@PathVariable UUID id){
+        SimulationResultDTO resultDTO = this.simulationService.createEDF(id);
+        return resultDTO;
+    }
+
 }

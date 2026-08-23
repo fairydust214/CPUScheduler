@@ -1,10 +1,7 @@
 package com.cpuflow.cpuschedulervisualization.service;
 
 import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.ScenarioDTO;
-import com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs.SimulationResultDTO;
-import com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs.SimulationType;
-import com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs.TaskDTO;
-import com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs.TimeNodeDTO;
+import com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs.*;
 import com.cpuflow.cpuschedulervisualization.model.Scenario;
 import com.cpuflow.cpuschedulervisualization.model.Task;
 import com.cpuflow.cpuschedulervisualization.model.TaskStatus;
@@ -12,6 +9,7 @@ import com.cpuflow.cpuschedulervisualization.repo.ScenarioRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -41,7 +39,6 @@ public class SimulationService {
         }
 
         SimulationResultDTO resultDTO = new SimulationResultDTO();
-        resultDTO.setQuantum(null);
         resultDTO.setAlgorithm(SimulationType.FCFS);
 
         List<TimeNodeDTO> timeline = new ArrayList<>();
@@ -61,7 +58,7 @@ public class SimulationService {
                     continue;
                 }
                 current = queue.poll();
-                startTimes.put(current.getId(),currentTime);
+                startTimes.putIfAbsent(current.getId(),currentTime);
             }
 
             if (current != null){
@@ -95,13 +92,9 @@ public class SimulationService {
             }
         }
         int numberOfTasks = allTasks.size();
-        resultDTO.setTotalTime(currentTime);
 
-        resultDTO.setAvgWaitingTime((double) totalWaitingTime / numberOfTasks);
-        resultDTO.setAvgTurnaroundTime((double) totalTurnaround / numberOfTasks);
-        resultDTO.setCpuUtilization((double) utilizedTime / currentTime *100);
-        resultDTO.setMissedDeadlines(missedDeadlines);
-        resultDTO.setTimeline(timeline);
+        this.calculateTelemetry(resultDTO,numberOfTasks,currentTime,utilizedTime,timeline,
+                totalWaitingTime,totalTurnaround,missedDeadlines);
         return resultDTO;
 
     }
@@ -117,7 +110,7 @@ public class SimulationService {
             task.setRemainingTime(task.getDuration());
         }
 
-        SimulationResultDTO resultDTO = new SimulationResultDTO();
+        SimularionResultRRDTO resultDTO = new SimularionResultRRDTO();
         resultDTO.setAlgorithm(SimulationType.RR);
         resultDTO.setQuantum(quantum);
 
@@ -128,6 +121,10 @@ public class SimulationService {
         LinkedList<Task> readyQueue = new LinkedList<>();
         int currentTime = 0;
         int busyTicks = 0;
+        int contextSwitches = 0;
+        int preemptions = 0;
+        UUID lastTaskId = null;
+
 
         while(!waitingToArrive.isEmpty() || !readyQueue.isEmpty()){
             while(!waitingToArrive.isEmpty() && waitingToArrive.peek().getArrivalTime()<= currentTime){
@@ -137,10 +134,16 @@ public class SimulationService {
             if(readyQueue.isEmpty()){
                 timeLine.add(new TimeNodeDTO(currentTime,null));
                 currentTime++;
+                lastTaskId = null;
                 continue;
             }
             Task current = readyQueue.poll();
             staringTimes.putIfAbsent(current.getId(),currentTime);
+
+            //Context switch if lastTaskId different is different from current
+            if(lastTaskId != null && !lastTaskId.equals(current.getId())){
+                contextSwitches++;
+            }
 
             int runTime = Math.min(quantum,current.getRemainingTime());
 
@@ -157,8 +160,10 @@ public class SimulationService {
                 }
 
             }
+            lastTaskId = current.getId();
             if(current.getRemainingTime() > 0){
                 readyQueue.add(current);
+                preemptions++;
             } else {
                 completionTimes.put(current.getId(),currentTime);
             }
@@ -167,12 +172,16 @@ public class SimulationService {
         List<Task> allTasks = new LinkedList<>(scenario.getTasks());
         int totalWaiting = 0;
         int totalTurnaround = 0;
+        int totalResponseTime = 0;
         int missedDeadlines = 0;
 
         for(Task task: allTasks){
+            int start = staringTimes.getOrDefault(task.getId(),0);
             int completion = completionTimes.getOrDefault(task.getId(),0);
+
             totalWaiting+=(completion - task.getArrivalTime() - task.getDuration());
             totalTurnaround+= (completion - task.getArrivalTime());
+            totalResponseTime += (start - task.getArrivalTime());
 
             if(completion > task.getArrivalTime() + task.getDeadline()){
                 missedDeadlines++;
@@ -180,57 +189,117 @@ public class SimulationService {
         }
 
         int numberOfTasks = allTasks.size();
+
+
+        this.calculateTelemetry(resultDTO,numberOfTasks,currentTime,busyTicks,timeLine,
+                totalWaiting,totalTurnaround,missedDeadlines);
+
+        resultDTO.setContextSwitches(contextSwitches);
+        resultDTO.setPreemptions(preemptions);
+        resultDTO.setAvgResponseTime((double) totalResponseTime/numberOfTasks);
+
+        return resultDTO;
+
+    }
+
+    public SimulationResultDTO createEDF(UUID id) {
+
+        Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for Round Robin not found with id:"));
+
+        LinkedList<Task> arrivalQueue = new LinkedList<>(scenario.getTasks());
+        arrivalQueue.sort(Comparator.comparing(Task::getArrivalTime));
+
+        for(Task task: arrivalQueue){
+            task.setRemainingTime(task.getDuration());
+        }
+
+        SimulationResultDTO resultDTO = new SimulationResultDTO();
+        resultDTO.setAlgorithm(SimulationType.EDF);
+        List<TimeNodeDTO> timeLine = new ArrayList<>();
+        int currentTime = 0;
+        int utilizedTime = 0;
+        Task current = null;
+
+        Map<UUID, Integer> startTimes = new HashMap<>();
+        Map<UUID, Integer> completionTimes = new HashMap<>();
+
+        PriorityQueue<Task> readyQueue = new PriorityQueue<>(Comparator.comparing(Task::getDeadline));
+
+        while(!arrivalQueue.isEmpty() || !readyQueue.isEmpty() || current != null){
+
+            while(!arrivalQueue.isEmpty() && arrivalQueue.peek().getArrivalTime() <=currentTime){
+                readyQueue.add(arrivalQueue.poll());
+            }
+            //preempt
+            if(current != null && !readyQueue.isEmpty()){
+                if(readyQueue.peek().getDeadline() < current.getDeadline()){
+                    readyQueue.add(current);
+                    current = readyQueue.poll();
+
+                }
+            }
+
+            if(current == null && !readyQueue.isEmpty()){
+                current = readyQueue.poll();
+            }
+
+            if(current == null){
+                timeLine.add(new TimeNodeDTO(currentTime,null));
+                currentTime++;
+                continue;
+            }
+            startTimes.putIfAbsent(current.getId(),currentTime);
+
+            current.setRemainingTime(current.getRemainingTime()-1);
+            utilizedTime++;
+            timeLine.add(new TimeNodeDTO(currentTime, new TaskDTO(current.getId(),
+                    current.getName(), TaskStatus.RUNNING,current.getRemainingTime())));
+            currentTime++;
+
+            if(current.getRemainingTime()==0){
+                completionTimes.putIfAbsent(current.getId(),currentTime);
+                current=null;
+            }
+        }
+
+        List<Task> allTasks = new LinkedList<>(scenario.getTasks());
+        int totalWaiting = 0;
+        int totalTurnaround = 0;
+        int missedDeadlines = 0;
+
+        for(Task task:allTasks){
+            int completion = completionTimes.getOrDefault(task.getId(),0);
+            totalWaiting += (completion -task.getArrivalTime() - task.getDuration());
+            totalTurnaround += (completion - task.getArrivalTime());
+
+            if(completion > task.getDeadline()){
+                missedDeadlines++;
+            }
+        }
+        int numberOfTasks = allTasks.size();
+
+        this.calculateTelemetry(resultDTO,numberOfTasks,currentTime,utilizedTime,
+                timeLine,totalWaiting,totalTurnaround,missedDeadlines);
+
+        return resultDTO;
+
+    }
+
+    private void calculateTelemetry(SimulationResultDTO resultDTO, int numberOfTasks,
+                                    int currentTime,
+                                    int busyTicks,
+                                    List<TimeNodeDTO> timeLine,
+                                    int totalWaiting,
+                                    int totalTurnaround,
+                                    int missedDeadlines){
         resultDTO.setTotalTime(currentTime);
         resultDTO.setTimeline(timeLine);
         resultDTO.setAvgWaitingTime((double) totalWaiting / numberOfTasks);
         resultDTO.setAvgTurnaroundTime((double) totalTurnaround / numberOfTasks);
         resultDTO.setCpuUtilization((double) busyTicks/currentTime *100);
         resultDTO.setMissedDeadlines(missedDeadlines);
-
-        return resultDTO;
-
     }
-    /*
-    public SimulationResultDTO createFCFS(UUID id){
-        Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(()->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for FCFS not found with id:"));
-
-        SimulationResultDTO resultDTO = new SimulationResultDTO();
-        resultDTO.setAlgorithm(SimulationType.FCFS);
-
-        LinkedList<Task> listWithTasks = scenario.getTasks();
-        listWithTasks.sort(Comparator.comparingInt(Task::getArrivalTime));
-        int numberOfTasks = listWithTasks.size();
-
-        int duration = scenario.getTasks().stream()
-                .mapToInt(Task::getDuration)
-                .sum();
-        resultDTO.setTotalTime(duration);
-
-        List<TimeNodeDTO> timeline = new LinkedList<>();
-
-        for(int i=0; i< duration; i++){
-            Task currentTask = listWithTasks.poll();
-            TaskDTO taskDTO = new TaskDTO(currentTask.getId(),
-                    currentTask.getName(),
-                    TaskStatus.RUNNING,
-                    currentTask.getRemainingTime()-1);
-
-            currentTask.setRemainingTime(currentTask.getRemainingTime()-1);
-            TimeNodeDTO curentTNDTO = new TimeNodeDTO(0,taskDTO);
-
-            if(currentTask.getRemainingTime() >0){
-                listWithTasks.add(currentTask);
-            }
-            timeline.add(curentTNDTO);
-        }
-
-
-        return resultDTO; // TODO
-
-    }
-
-     */
 
 
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 public class SimulationResultDTO {
     private SimulationType algorithm;
-    private Integer quantum;
     private int totalTime;
 
 
@@ -25,14 +24,6 @@ public class SimulationResultDTO {
 
     public void setAlgorithm(SimulationType algorithm) {
         this.algorithm = algorithm;
-    }
-
-    public Integer getQuantum() {
-        return quantum;
-    }
-
-    public void setQuantum(Integer quantum) {
-        this.quantum = quantum;
     }
 
     public int getTotalTime() {
