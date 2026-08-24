@@ -205,7 +205,7 @@ public class SimulationService {
     public SimulationResultDTO createEDF(UUID id) {
 
         Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for Round Robin not found with id:"));
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for EDF not found with id:"));
 
         LinkedList<Task> arrivalQueue = new LinkedList<>(scenario.getTasks());
         arrivalQueue.sort(Comparator.comparing(Task::getArrivalTime));
@@ -284,6 +284,124 @@ public class SimulationService {
 
         return resultDTO;
 
+    }
+
+    public SimulationResultDTO createLST(UUID uuid){
+        Scenario scenario = this.scenarioRepo.findById(uuid).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for LST not found with id:"));
+
+        LinkedList<Task> arrivalQueue = new LinkedList<>(scenario.getTasks());
+        arrivalQueue.sort(Comparator.comparing(Task::getArrivalTime));
+
+        for(Task task: arrivalQueue){
+            task.setRemainingTime(task.getDuration());
+        }
+
+        SimulationResultLSTDTO resultDTO = new SimulationResultLSTDTO();
+        resultDTO.setAlgorithm(SimulationType.LST);
+
+        int currentTime = 0;
+        int utilizedTime = 0;
+        int contextSwitches = 0;
+        int preemptions = 0;
+        int negativeSlackEvents = 0;
+        Task current = null;
+        UUID lastTaskId = null;
+        boolean lastTaskFinished = false;
+
+        List<TimeNodeDTO> timeLine = new ArrayList<>();
+        Map<UUID, Integer> startTimes = new HashMap<>();
+        Map<UUID, Integer> completionTimes = new HashMap<>();
+        Set<UUID> negativeSlackTasks = new HashSet<>();
+
+        PriorityQueue<Task> priorityQueue = new PriorityQueue<>(Comparator.comparing
+                ((Task t)-> t.getDeadline() - t.getRemainingTime()).thenComparingInt(Task::getArrivalTime));
+
+        while(!arrivalQueue.isEmpty() || !priorityQueue.isEmpty() || current != null){
+
+            while(!arrivalQueue.isEmpty() && arrivalQueue.peek().getArrivalTime() <=currentTime){
+                priorityQueue.add(arrivalQueue.poll());
+            }
+
+            if(current != null){
+                priorityQueue.add(current);
+                current = null;
+            }
+            if(!priorityQueue.isEmpty()){
+                current = priorityQueue.poll();
+            }
+
+            if(current == null){
+                timeLine.add(new TimeNodeDTO(currentTime,null));
+                currentTime++;
+                lastTaskId =null;
+                continue;
+            }
+
+            if(lastTaskId != null && !lastTaskId.equals(current.getId())){
+                contextSwitches++;
+                if(!lastTaskFinished){
+                    preemptions++;
+                }
+            }
+            int currentSlack = current.getDeadline() - currentTime - current.getRemainingTime();
+            if(currentSlack < 0){
+                negativeSlackEvents++;
+                negativeSlackTasks.add(current.getId());
+            }
+
+            for(Task t: priorityQueue){
+                int slack = t.getDeadline() - currentTime - t.getRemainingTime();
+                if(slack < 0){
+                    negativeSlackEvents++;
+                    negativeSlackTasks.add(t.getId());
+                }
+
+            }
+
+            startTimes.putIfAbsent(current.getId(),currentTime);
+
+            current.setRemainingTime(current.getRemainingTime()-1);
+            utilizedTime++;
+            timeLine.add(new TimeNodeDTO(currentTime, new TaskDTO(current.getId(),
+                    current.getName(), TaskStatus.RUNNING,current.getRemainingTime())));
+            currentTime++;
+            lastTaskId = current.getId();
+            lastTaskFinished = false;
+            if(current.getRemainingTime()==0){
+                completionTimes.putIfAbsent(current.getId(),currentTime);
+                current=null;
+                lastTaskFinished = true;
+            }
+        }
+
+        List<Task> allTasks = new LinkedList<>(scenario.getTasks());
+        int totalWaiting = 0;
+        int totalTurnaround = 0;
+        int totalResponseTime = 0;
+        int missedDeadlines = 0;
+
+        for(Task task: allTasks){
+            int start = startTimes.getOrDefault(task.getId(),0);
+            int completion = completionTimes.getOrDefault(task.getId(),0);
+            totalWaiting += (completion - task.getArrivalTime() - task.getDuration());
+            totalTurnaround += (completion - task.getArrivalTime());
+            totalResponseTime += (start - task.getArrivalTime());
+
+            if(completion > task.getDeadline()){
+                missedDeadlines++;
+            }
+        }
+
+        int numberOfTasks = allTasks.size();
+        this.calculateTelemetry(resultDTO, numberOfTasks, currentTime,utilizedTime,timeLine,totalWaiting,
+                totalTurnaround,missedDeadlines);
+        resultDTO.setContextSwitches(contextSwitches);
+        resultDTO.setPreemptions(preemptions);
+        resultDTO.setNegativeSlackEvents(negativeSlackEvents);
+        resultDTO.setNegativeSlackTasks(negativeSlackTasks.size());
+        resultDTO.setAvgResponseTime((double) totalResponseTime / numberOfTasks);
+        return resultDTO;
     }
 
     private void calculateTelemetry(SimulationResultDTO resultDTO, int numberOfTasks,

@@ -41,4 +41,10 @@ public class SimulationResource {
         return resultDTO;
     }
 
+    @GetMapping("LST/{id}")
+    public SimulationResultDTO createLST(@PathVariable UUID id){
+        SimulationResultDTO resultDTO = this.simulationService.createLST(id);
+        return resultDTO;
+    }
+
 }
