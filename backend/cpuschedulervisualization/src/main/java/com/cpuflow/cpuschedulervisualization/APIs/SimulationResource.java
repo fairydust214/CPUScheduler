@@ -47,4 +47,10 @@ public class SimulationResource {
         return resultDTO;
     }
 
+    @GetMapping("PCP/{id}")
+    public SimulationResultDTO createPCP(@PathVariable UUID id){
+        SimulationResultDTO resultDTO = this.simulationService.createPCP(id);
+        return resultDTO;
+    }
+
 }

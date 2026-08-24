@@ -2,6 +2,7 @@ package com.cpuflow.cpuschedulervisualization.service;
 
 import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.ScenarioDTO;
 import com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs.*;
+import com.cpuflow.cpuschedulervisualization.model.ResourceRequest;
 import com.cpuflow.cpuschedulervisualization.model.Scenario;
 import com.cpuflow.cpuschedulervisualization.model.Task;
 import com.cpuflow.cpuschedulervisualization.model.TaskStatus;
@@ -19,6 +20,7 @@ import java.util.*;
 @Transactional
 public class SimulationService {
 
+
     private final ScenarioRepo scenarioRepo;
 
     @Autowired
@@ -29,7 +31,7 @@ public class SimulationService {
 
     public SimulationResultDTO createFCFS(UUID id) {
         Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for FCFS not found with id:"));
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for FCFS not found with id:" + id));
 
         LinkedList<Task> queue = new LinkedList<>(scenario.getTasks());
         queue.sort(Comparator.comparing(Task::getArrivalTime)); //TODO Learn this
@@ -101,7 +103,7 @@ public class SimulationService {
 
     public SimulationResultDTO createRoundRobin(UUID id, int quantum){
         Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for Round Robin not found with id:"));
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for Round Robin not found with id:" + id));
 
         LinkedList<Task> waitingToArrive = new LinkedList<>(scenario.getTasks());
         waitingToArrive.sort(Comparator.comparingInt(Task::getArrivalTime));
@@ -205,7 +207,7 @@ public class SimulationService {
     public SimulationResultDTO createEDF(UUID id) {
 
         Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for EDF not found with id:"));
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for EDF not found with id:" + id));
 
         LinkedList<Task> arrivalQueue = new LinkedList<>(scenario.getTasks());
         arrivalQueue.sort(Comparator.comparing(Task::getArrivalTime));
@@ -288,7 +290,7 @@ public class SimulationService {
 
     public SimulationResultDTO createLST(UUID uuid){
         Scenario scenario = this.scenarioRepo.findById(uuid).orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for LST not found with id:"));
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for LST not found with id:" + uuid));
 
         LinkedList<Task> arrivalQueue = new LinkedList<>(scenario.getTasks());
         arrivalQueue.sort(Comparator.comparing(Task::getArrivalTime));
@@ -401,6 +403,24 @@ public class SimulationService {
         resultDTO.setNegativeSlackEvents(negativeSlackEvents);
         resultDTO.setNegativeSlackTasks(negativeSlackTasks.size());
         resultDTO.setAvgResponseTime((double) totalResponseTime / numberOfTasks);
+        return resultDTO;
+    }
+
+    public SimulationResultDTO createPCP(UUID id){
+        Scenario scenario = this.scenarioRepo.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Scenario for PCP not found with id:" +id));
+
+        LinkedList<Task> queue = new LinkedList<>(scenario.getTasks());
+        queue.sort(Comparator.comparing(Task::getArrivalTime));
+
+        for(Task t: queue){
+            t.setRemainingTime(t.getDuration());
+            t.getResourceRequests().sort(Comparator.comparing(ResourceRequest::getStartOffset));
+        }
+
+        SimulationResultDTO resultDTO = new SimulationResultDTO();
+        resultDTO.setAlgorithm(SimulationType.PC);
+
         return resultDTO;
     }
 

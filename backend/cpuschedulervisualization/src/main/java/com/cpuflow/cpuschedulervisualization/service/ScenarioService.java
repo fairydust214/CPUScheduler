@@ -79,7 +79,7 @@ public class ScenarioService {
             LinkedList<Resource> resultList = new LinkedList<>();
 
             for(ResourceDetailedDTO rDTO : dtoList){
-                resultList.add(this.mapper.toEntity(rDTO));
+                resultList.add(this.mapper.toEntity(rDTO, scenario));
             }
             scenario.setResources(resultList);
         }
