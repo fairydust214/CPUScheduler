@@ -4,6 +4,7 @@ import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.ResourceDetailedDTO;
 import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.ResourceRequestDTO;
 import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.ScenarioDTO;
 import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.TaskDetailedDTO;
+import com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs.TaskDTO;
 import com.cpuflow.cpuschedulervisualization.model.Resource;
 import com.cpuflow.cpuschedulervisualization.model.ResourceRequest;
 import com.cpuflow.cpuschedulervisualization.model.Scenario;
@@ -203,4 +204,38 @@ public class DtoMapper {
             }
         }
     }
+
+    public void createResourceRequests(ScenarioDTO dto) {
+
+        if (dto.getTasks() == null) {
+            return;
+        }
+
+        for (TaskDetailedDTO taskDTO : dto.getTasks()) {
+            Task task = taskRepo.findById(taskDTO.getId())
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Task not found: " + taskDTO.getId()));
+
+            task.getResourceRequests().clear();
+
+            if (taskDTO.getResourceRequests() != null) {
+                for (ResourceRequestDTO rrDto : taskDTO.getResourceRequests()) {
+                    ResourceRequest rr = new ResourceRequest();
+                    rr.setTask(task);
+                    rr.setResource(resourceRepo.findById(rrDto.getResourceId())
+                            .orElseThrow(() -> new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND,
+                                    "Resource not found: " + rrDto.getResourceId())));
+                    rr.setStartOffset(rrDto.getStartOffset());
+                    rr.setDuration(rrDto.getDuration());
+                    task.getResourceRequests().add(rr);
+                }
+            }
+
+            taskRepo.save(task);
+        }
+    }
+
+
 }

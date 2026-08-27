@@ -44,6 +44,12 @@ public class ScnearioResource {
         return ResponseEntity.ok(scenarioService.update(id, dto));
     }
 
+    @PutMapping("/{id}/resource-requests")
+    public ResponseEntity<ScenarioDTO> createResourceRequests(@PathVariable UUID id,
+                                              @RequestBody ScenarioDTO dto) {
+        return ResponseEntity.ok(scenarioService.createResourceRequests(id, dto));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         scenarioService.delete(id);

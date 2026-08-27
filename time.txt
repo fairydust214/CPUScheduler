@@ -7,7 +7,8 @@
 |2026-08-16 |01:00:00	| FCFS works in the backend
 |2026-08-22 |00:30:00	| implemented RoundRobin (needs to be tested)
 |2026-08-23 |00:30:00	| implemented EDF (needs to be tested)
-|2026-08-24 |02:00:00	| implemented LST (needs to be testeed) and started working on PCP 
+|2026-08-24 |02:00:00	| implemented LST (needs to be testeed) and started working on PCP
+|2026-08-27 |01:09:22	| Fixed Domain Structure to accomodate
 
 
-Total: 14:10:45H
+Total: 15:20:07H

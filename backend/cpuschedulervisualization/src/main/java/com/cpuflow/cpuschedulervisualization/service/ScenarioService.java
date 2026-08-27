@@ -7,6 +7,7 @@ import com.cpuflow.cpuschedulervisualization.model.Resource;
 import com.cpuflow.cpuschedulervisualization.model.Scenario;
 import com.cpuflow.cpuschedulervisualization.model.Task;
 import com.cpuflow.cpuschedulervisualization.repo.ScenarioRepo;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,12 +24,14 @@ public class ScenarioService {
 
     private final ScenarioRepo scenarioRepo;
     private final DtoMapper mapper;
+    private final EntityManager entityManager;
 
 
     @Autowired
-    public ScenarioService(ScenarioRepo scenarioRepo, DtoMapper mapper) {
+    public ScenarioService(ScenarioRepo scenarioRepo, DtoMapper mapper, EntityManager entityManager) {
         this.scenarioRepo = scenarioRepo;
         this.mapper = mapper;
+        this.entityManager = entityManager;
     }
 
     public ScenarioDTO create(ScenarioDTO dto) {
@@ -63,6 +66,27 @@ public class ScenarioService {
         scenarioToUpdate.setName(dto.getName());
         scenarioToUpdate = this.scenarioRepo.save(scenarioToUpdate);
         return entityToDto(scenarioToUpdate);
+    }
+
+    public ScenarioDTO createResourceRequests(UUID id, ScenarioDTO dto) {
+        this.scenarioRepo.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Scenario not found with id:" + id));
+
+        this.mapper.createResourceRequests(dto);
+
+        // Flush pending SQL to database
+        entityManager.flush();
+
+        // Clear first-level cache — forgets all cached entities
+        entityManager.clear();
+
+        // get data from database
+        Scenario reloaded = this.scenarioRepo.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Scenario not found with id:" + id));
+
+        return entityToDto(reloaded);
     }
 
     public void delete(UUID id) {
