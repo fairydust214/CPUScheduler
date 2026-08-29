@@ -1,11 +1,9 @@
 package com.cpuflow.cpuschedulervisualization.service;
 
+import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.ResourceRequestDTO;
 import com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs.ScenarioDTO;
 import com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs.*;
-import com.cpuflow.cpuschedulervisualization.model.ResourceRequest;
-import com.cpuflow.cpuschedulervisualization.model.Scenario;
-import com.cpuflow.cpuschedulervisualization.model.Task;
-import com.cpuflow.cpuschedulervisualization.model.TaskStatus;
+import com.cpuflow.cpuschedulervisualization.model.*;
 import com.cpuflow.cpuschedulervisualization.repo.ScenarioRepo;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -413,16 +411,206 @@ public class SimulationService {
         LinkedList<Task> queue = new LinkedList<>(scenario.getTasks());
         queue.sort(Comparator.comparing(Task::getArrivalTime));
 
+        LinkedList<Resource> resourceList = new LinkedList<>(scenario.getResources());
+        for(Resource resource: resourceList){
+            resource.setPriorityCeiling(resource.findPriorityCeiling());
+            resource.setStatus(ResourceStatus.FREE);
+        }
+
         for(Task t: queue){
             t.setRemainingTime(t.getDuration());
+            t.setEffectivePriority(t.getPriority());
             t.getResourceRequests().sort(Comparator.comparing(ResourceRequest::getStartOffset));
         }
 
         SimulationResultDTO resultDTO = new SimulationResultDTO();
         resultDTO.setAlgorithm(SimulationType.PC);
 
+        PriorityQueue<Task> readyQueue = new PriorityQueue<>(Comparator.comparing(Task::getEffectivePriority).reversed().thenComparingInt(Task::getArrivalTime));
+        List<TimeNodeDTO> timeline = new LinkedList<>();
+        Task current = null;
+        int currentTime = 0;
+
+        int totalTasks = queue.size();
+        int completedTasks=0;
+
+
+        HighestPriorityInfo heighestInfo = new HighestPriorityInfo();
+        List<ResourceRequestDTO> currentTakenResources = new LinkedList<>();
+        Map<Resource, ResourceRequest> mapOfTakenResources = new HashMap<>();
+        while(completedTasks < totalTasks){
+
+            while(!queue.isEmpty() && queue.peek().getArrivalTime() <= currentTime){
+                readyQueue.add(queue.poll());
+            }
+            if(current == null){
+                if(readyQueue.isEmpty()){
+                    timeline.add(new TimeNodeDTO(currentTime,null));
+                    currentTime++;
+                    continue;
+                }
+                current = readyQueue.poll();
+            }
+            if(current != null && !readyQueue.isEmpty() && readyQueue.peek().getEffectivePriority() > current.getEffectivePriority()){
+                readyQueue.add(current);
+                current = readyQueue.poll();
+
+            }
+
+            int executedTime = current.getDuration() - current.getRemainingTime();
+
+            for(ResourceRequest rr: current.getResourceRequests()){
+                int start = rr.getStartOffset();
+                int end = start + rr.getDuration();
+
+                if(executedTime == end){
+                    freeResource(rr,currentTakenResources,mapOfTakenResources,current);
+                    recalculateHeighestPriority(mapOfTakenResources,heighestInfo);
+                }
+                if(executedTime == start){
+                    if(canAcquireLock(current,rr.getResource(),heighestInfo)){
+                        rr.getResource().setStatus(ResourceStatus.TAKEN);
+                        mapOfTakenResources.put(rr.getResource(),rr);
+                        currentTakenResources.add(
+                                new ResourceRequestDTO(rr.getId(),rr.getResource().getId(),current.getId(),rr.getStartOffset(),rr.getDuration()));
+                        recalculateHeighestPriority(mapOfTakenResources,heighestInfo);
+                    } else{
+                        inheritPriority(current,rr.getResource(),mapOfTakenResources,heighestInfo, readyQueue);
+                        readyQueue.add(current);
+                        current=null;
+                        break;
+                    }
+                }
+            }
+
+            if (current == null){
+                continue;
+            }
+
+            current.setRemainingTime(current.getRemainingTime()-1);
+            timeline.add(new TimeNodeDTO(currentTime,
+                    new TaskDTOPC(current.getId(), current.getName(), TaskStatus.RUNNING,current.getRemainingTime(),currentTakenResources)));
+
+            currentTime++;
+
+            if(current.getRemainingTime() == 0){
+                for(ResourceRequest rr: current.getResourceRequests()){
+                    freeResource(rr,currentTakenResources,mapOfTakenResources,current);
+                }
+                recalculateHeighestPriority(mapOfTakenResources,heighestInfo);
+                completedTasks++;
+                current =null;
+            }
+
+
+        }
+
+        resultDTO.setTimeline(timeline);
         return resultDTO;
     }
+
+    private void updatePriority(PriorityQueue<Task> readyQueue, Task task, int newPriority){
+        readyQueue.remove(task);
+        task.setEffectivePriority(newPriority);
+        readyQueue.add(task);
+    }
+
+    private void recalculateHeighestPriority(Map<Resource, ResourceRequest> mapOfTakenResources, HighestPriorityInfo info){
+        info.reset();
+
+        for(Map.Entry<Resource, ResourceRequest> entry : mapOfTakenResources.entrySet()){
+            Resource res = entry.getKey();
+            ResourceRequest rr = entry.getValue();
+
+            if(res.getPriorityCeiling()>info.getPriority()){
+                info.setPriority(res.getPriorityCeiling());
+                info.setResourceID(res.getId());
+                info.setResourceRequestID(rr.getId());
+                info.setTaskID(rr.getTask().getId());
+            }
+        }
+    }
+
+    private void freeResource(ResourceRequest rr, List<ResourceRequestDTO> currentTakenResources,Map<Resource, ResourceRequest> mapOfTakenResources, Task current){
+        rr.getResource().setStatus(ResourceStatus.FREE);
+        currentTakenResources.removeIf(rrDTO -> rrDTO.getId().equals(rr.getId()));
+        mapOfTakenResources.remove(rr.getResource());
+        if(mapOfTakenResources.values().stream().noneMatch(r -> r.getTask().getId().equals(current.getId()))){
+            current.resetEffectivePriority();;
+        }
+        /*
+        while(it.hasNext()){
+            ResourceRequestDTO rrDTO = it.next();
+            if(rrDTO.getId().equals(rr.getId())){
+                it.remove();
+                break;
+            }
+        }
+
+         */
+    }
+    private void inheritPriority(Task blockedTask, Resource resource, Map<Resource,
+            ResourceRequest> mapOfTakenResources, HighestPriorityInfo heighestInfo, PriorityQueue<Task> readyQueue){
+        Task holder = null;
+        if(resource.getStatus() == ResourceStatus.TAKEN){
+            ResourceRequest holdingRR = mapOfTakenResources.get(resource);
+            if(holdingRR != null){
+                holder = holdingRR.getTask();
+            }
+        } else{
+            //system ceiling
+            for(ResourceRequest rr: mapOfTakenResources.values()){
+                if(rr.getTask().getId().equals(heighestInfo.getTaskID())){
+                    holder = rr.getTask();
+                    break;
+                }
+
+            }
+        }
+        if(holder != null && blockedTask.getEffectivePriority() > holder.getEffectivePriority()){
+            updatePriority(readyQueue,holder, blockedTask.getEffectivePriority());
+        }
+
+    }
+
+    private boolean canAcquireLock(Task task, Resource resource, HighestPriorityInfo heighestInfo){
+        if(resource.getStatus() != ResourceStatus.FREE){
+            return false;
+        }
+
+        if( heighestInfo == null || heighestInfo.getPriority() == -1 || heighestInfo.getTaskID() == null){
+            return true;
+        }
+
+        if(heighestInfo.getTaskID().equals(task.getId())){
+            return true;
+        }
+
+        return task.getEffectivePriority() > heighestInfo.getPriority();
+
+    }
+    /*
+    private boolean canAcquireLock(Task task, Resource resource, Map<Resource,ResourceRequest> mapOfTakenResources){
+        if(resource.getStatus() != ResourceStatus.FREE){
+            return false;
+        }
+
+        int highestCeilingOfOthers = -1;
+        for(Map.Entry<Resource, ResourceRequest> entry: mapOfTakenResources.entrySet()){
+            Resource heldResource = entry.getKey();
+            ResourceRequest heldRR = entry.getValue();
+
+            if(heldRR.getTask().getId().equals(task.getId())){
+                continue;
+            }
+            highestCeilingOfOthers = Math.max(highestCeilingOfOthers, heldResource.getPriorityCeiling());
+        }
+
+        return task.getPriority() > highestCeilingOfOthers;
+
+    }
+
+     */
 
     private void calculateTelemetry(SimulationResultDTO resultDTO, int numberOfTasks,
                                     int currentTime,

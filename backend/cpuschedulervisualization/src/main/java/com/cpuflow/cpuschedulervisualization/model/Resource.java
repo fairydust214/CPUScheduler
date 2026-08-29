@@ -92,4 +92,20 @@ public class Resource implements Serializable {
     public void setScenario(Scenario scenario) {
         this.scenario = scenario;
     }
+
+    public Integer findPriorityCeiling(){
+        Integer heighest = -1;
+        if(this.resourceRequests != null && !this.resourceRequests.isEmpty()){
+            for(ResourceRequest rr : this.resourceRequests){
+                Integer current = rr.getTask().getPriority();
+
+                if(current > heighest){
+                    heighest = current;
+                }
+            }
+        }
+        this.priorityCeiling = heighest;
+
+        return heighest;
+    }
 }

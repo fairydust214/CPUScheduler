@@ -3,8 +3,7 @@ package com.cpuflow.cpuschedulervisualization.model;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "tasks")
@@ -46,6 +45,13 @@ public class Task implements Serializable {
     private int turnaroundTime; // completionTime - arrivalTime
     @Transient
     private int responseTime; // startTime - arrivalTime
+
+    @Transient
+    private Map<Resource, Integer> heldResources = new HashMap<>();
+    @Transient
+    private Integer effectivePriority;
+    @Transient
+    private Resource blockedOnResource;
 
 
 
@@ -180,13 +186,47 @@ public class Task implements Serializable {
     public void setScenario(Scenario scenario) {
         this.scenario = scenario;
     }
+
+    public Map<Resource, Integer> getHeldResources() {
+        return heldResources;
+    }
+
+    public Integer getEffectivePriority() {
+        return effectivePriority;
+    }
+
+    public void setEffectivePriority(Integer effectivePriority) {
+        this.effectivePriority = effectivePriority;
+    }
+
+    public Resource getBlockedOnResource() {
+        return blockedOnResource;
+    }
+
+    public void setBlockedOnResource(Resource blockedOnResource) {
+        this.blockedOnResource = blockedOnResource;
+    }
+
+    public Integer getDurationOfHeldResource(Resource r){
+        return this.heldResources.getOrDefault(r,0);
+    }
+
+    public void setHeldResources(Map<Resource, Integer> heldResources) {
+        this.heldResources = heldResources;
+    }
+
+    public List<ResourceRequest> getActiveResourceRequests(int currentTime){
+        List<ResourceRequest> listWithRR = new LinkedList<>();
+        for(ResourceRequest rr: this.resourceRequests){
+            if(currentTime == rr.getStartOffset()){
+                listWithRR.add(rr);
+            }
+        }
+
+        return listWithRR;
+    }
+
+    public void resetEffectivePriority(){
+        this.effectivePriority = this.priority;
+    }
 }
-
-
-
-
-
-
-
-
-

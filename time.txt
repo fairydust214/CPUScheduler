@@ -9,6 +9,7 @@
 |2026-08-23 |00:30:00	| implemented EDF (needs to be tested)
 |2026-08-24 |02:00:00	| implemented LST (needs to be testeed) and started working on PCP
 |2026-08-27 |01:09:22	| Fixed Domain Structure to accomodate
+|2026-08-29 |02:14:51	| Implemented Priority Ceiling Algorithm (not tested)
 
 
-Total: 15:20:07H
+Total: 17:34:58H
