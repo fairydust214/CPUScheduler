@@ -8,6 +8,7 @@ public class ResourceRequestDTO {
     private UUID taskID;
     private int startOffset;
     private int duration;
+    private int remainingTime;
 
     public ResourceRequestDTO() {
     }
@@ -58,5 +59,13 @@ public class ResourceRequestDTO {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public int getRemainingTime() {
+        return remainingTime;
+    }
+
+    public void setRemainingTime(int remainingTime) {
+        this.remainingTime = remainingTime;
     }
 }

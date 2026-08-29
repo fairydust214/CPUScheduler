@@ -471,8 +471,9 @@ public class SimulationService {
                     if(canAcquireLock(current,rr.getResource(),heighestInfo)){
                         rr.getResource().setStatus(ResourceStatus.TAKEN);
                         mapOfTakenResources.put(rr.getResource(),rr);
-                        currentTakenResources.add(
-                                new ResourceRequestDTO(rr.getId(),rr.getResource().getId(),current.getId(),rr.getStartOffset(),rr.getDuration()));
+                        ResourceRequestDTO toAdd = new ResourceRequestDTO(rr.getId(),rr.getResource().getId(),current.getId(),rr.getStartOffset(),rr.getDuration());
+                        toAdd.setRemainingTime(rr.getDuration());
+                        currentTakenResources.add(toAdd);
                         recalculateHeighestPriority(mapOfTakenResources,heighestInfo);
                     } else{
                         inheritPriority(current,rr.getResource(),mapOfTakenResources,heighestInfo, readyQueue);
@@ -488,8 +489,19 @@ public class SimulationService {
             }
 
             current.setRemainingTime(current.getRemainingTime()-1);
+            LinkedList<ResourceRequestDTO> addRrDTOListToTimeLine = new LinkedList<>();
+            for(ResourceRequestDTO rrDTO: currentTakenResources){
+                if(rrDTO.getTaskID().equals(current.getId())){
+                    rrDTO.setRemainingTime(rrDTO.getRemainingTime()-1);
+                }
+                ResourceRequestDTO toAdd = new ResourceRequestDTO(rrDTO.getId(),rrDTO.getResourceId(),rrDTO.getTaskID(), rrDTO.getStartOffset(), rrDTO.getDuration());
+                toAdd.setRemainingTime(rrDTO.getRemainingTime());
+                addRrDTOListToTimeLine.add(toAdd);
+
+            }
+
             timeline.add(new TimeNodeDTO(currentTime,
-                    new TaskDTOPC(current.getId(), current.getName(), TaskStatus.RUNNING,current.getRemainingTime(),new LinkedList<>(currentTakenResources))));
+                    new TaskDTOPC(current.getId(), current.getName(), TaskStatus.RUNNING,current.getRemainingTime(),addRrDTOListToTimeLine)));
 
             currentTime++;
 
