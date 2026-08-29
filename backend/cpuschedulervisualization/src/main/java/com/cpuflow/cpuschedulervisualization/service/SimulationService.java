@@ -489,7 +489,7 @@ public class SimulationService {
 
             current.setRemainingTime(current.getRemainingTime()-1);
             timeline.add(new TimeNodeDTO(currentTime,
-                    new TaskDTOPC(current.getId(), current.getName(), TaskStatus.RUNNING,current.getRemainingTime(),currentTakenResources)));
+                    new TaskDTOPC(current.getId(), current.getName(), TaskStatus.RUNNING,current.getRemainingTime(),new LinkedList<>(currentTakenResources))));
 
             currentTime++;
 
@@ -505,6 +505,7 @@ public class SimulationService {
 
         }
 
+        resultDTO.setTotalTime(currentTime);
         resultDTO.setTimeline(timeline);
         return resultDTO;
     }
