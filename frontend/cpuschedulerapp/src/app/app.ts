@@ -3,11 +3,11 @@ import { RouterOutlet } from '@angular/router';
 import { Resource } from './resource';
 import { ResourceService } from './resource.service';
 import { HttpErrorResponse } from '@angular/common/http';
-
+import { Header } from './header/header';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, Header],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
@@ -17,7 +17,6 @@ export class App implements OnInit {
   constructor(private processService: ResourceService){}
 
   ngOnInit(): void { // when component is initialised
-    this.getResources();
   }
   public getResources(): void{
     this.processService.getAllResources().subscribe({

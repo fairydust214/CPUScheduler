@@ -1,3 +1,30 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Cascadia+Code:ital,wght@0,200..700;1,200..700&display=swap'); /*(2026.08.31) */
+
+
+@theme {
+    --color-dark: #31353f;
+    --color-sand: #c0b89b;
+    --color-sage: #bec0b1;
+    --color-slate: #7c7f82;
+    --color-offWhite: #f4f5f4;
+
+    --font-cascadia: "Cascadia Code", monospace;
+}
+
+@layer components {
+  .my-button {
+    @apply font-cascadia bg-sage text-dark rounded-lg
+           text-lg font-semibold
+           transition-colors duration-200
+           hover:bg-offWhite hover:text-dark;
+           padding: 1rem 2rem;
+  }
+}
+
+router-outlet + * {
+    display: block;
+    height: 100%;
+}
