@@ -10,6 +10,7 @@
 |2026-08-24 |02:00:00	| implemented LST (needs to be testeed) and started working on PCP
 |2026-08-27 |01:09:22	| Fixed Domain Structure to accomodate
 |2026-08-29 |02:14:51	| Implemented Priority Ceiling Algorithm (not tested)
+|2026-08-31 |03:32:11	| Started working on Frontend and implemented getAllScenarios
 
 
-Total: 17:34:58H
+Total: 21:03:09H

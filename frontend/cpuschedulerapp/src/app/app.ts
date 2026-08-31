@@ -11,22 +11,6 @@ import { Header } from './header/header';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit {
-  public myResources = signal<Resource[]>([]);
-
-  constructor(private processService: ResourceService){}
-
-  ngOnInit(): void { // when component is initialised
-  }
-  public getResources(): void{
-    this.processService.getAllResources().subscribe({
-      next: (response: Resource[]) => {
-        this.myResources.set(response);
-        console.log(this.myResources);
-      },
-      error: (error: HttpErrorResponse) => {
-        alert(error.message);
-      }
-    });
-  }
+export class App{
+  
 }

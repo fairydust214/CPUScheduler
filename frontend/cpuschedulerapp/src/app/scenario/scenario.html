@@ -1,29 +1,57 @@
-<main class="flex justify-center p-6">
-    <div class="w-full">
-    <div class="w-full flex items-center justify-between px-6 py-4 border-b border-sage">
-        <div class="flex items-center gap-8">
-            <span class="font-cascadia text-offWhite">
-                Name
-            </span>
-            <span class="font-cascadia text-offWhite">
-                Number of Tasks
-            </span>
-            <span class="font-cascadia text-offWhite">
-                Number of Resources
-            </span>
+<div >
+    
+    <div class="w-full p-6">
+        <div class="w-full flex items-center justify-between px-6 py-4 border-b border-sage">
+            <div class="flex items-center gap-8">
+                <span class="font-cascadia text-offWhite">
+                    Name
+                </span>
+                <span class="font-cascadia text-offWhite">
+                    Number of Tasks
+                </span>
+                <span class="font-cascadia text-offWhite">
+                    Number of Resources
+                </span>
+            </div>
+            <div class="flex gap-4">
+                <button class="my-button px-2 py-2">
+                    &#x1F6C8;
+                </button>
+                <button class="my-button px-2 py-2">
+                    Simulate
+                </button>
+                <button class="my-button px-2 py-2">
+                    &#x1F5D1;
+                </button>
+                
+            </div>
         </div>
-        <div class="flex gap-4">
-            <button class="my-button px-2 py-2">
-                &#x1F6C8;
-            </button>
-            <button class="my-button px-2 py-2">
-                Simulate
-            </button>
-            <button class="my-button px-2 py-2">
-                &#x1F5D1;
-            </button>
-            
+        @for (scenario of scenarios(); track scenario.id){
+            <div class="w-full flex items-center justify-between px-6 py-4 border-b border-sage">
+            <div class="flex items-center gap-8">
+                <span class="font-cascadia text-offWhite">
+                    {{ scenario.name }}
+                </span>
+                <span class="font-cascadia text-offWhite">
+                    {{ scenario.tasks.length }}
+                </span>
+                <span class="font-cascadia text-offWhite">
+                    {{ scenario.resources.length }}
+                </span>
+            </div>
+            <div class="flex gap-4">
+                <button class="my-button px-2 py-2">
+                    &#x1F6C8;
+                </button>
+                <button class="my-button px-2 py-2">
+                    Simulate
+                </button>
+                <button class="my-button px-2 py-2">
+                    &#x1F5D1;
+                </button>
+                
+            </div>
         </div>
+        }
     </div>
-    </div>
-</main>
+</div>
