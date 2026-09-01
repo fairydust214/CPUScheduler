@@ -23,6 +23,12 @@
   }
 }
 
+@layer components{
+  .my-inputField{
+    @apply p-2 bg-slate text-offWhite placeholder:text-offWhite/50 rounded outline-none;
+  }
+}
+
 router-outlet + * {
     display: block;
     height: 100%;

@@ -1,0 +1,87 @@
+<div class="p-8">
+
+  <!-- Notification Toast -->
+  @if (notification) {
+    <div class="fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg
+                text-white font-bold transition-all"
+         [class.bg-green-600]="notification.type === 'success'"
+         [class.bg-red-600]="notification.type === 'error'">
+      {{ notification.message }}
+    </div>
+  }
+
+  <!-- Scenario Header -->
+  <h1 class="text-3xl font-bold text-sage">Scenario</h1>
+  <hr class="border-sage mt-2">
+
+  <!-- Scenario Name -->
+  <div class="mt-4">
+    <label class="text-lg text-sage block mb-1">Scenario Name</label>
+    <input type="text"
+           placeholder="Name of the Scenario"
+           [(ngModel)]="scenarioName"
+           class="w-96 p-2 bg-slate text-offWhite placeholder:text-offWhite/50
+                  rounded outline-none">
+  </div>
+
+  <!-- Task Section -->
+  <div class="mt-12">
+    <h2 class="text-3xl font-bold text-sage">Task</h2>
+    <hr class="border-sage mt-2">
+
+    @for (task of tasks; track task.id) {
+      <div class="flex flex-row gap-3 mt-3">
+        <input type="text"
+               placeholder="Name"
+               [(ngModel)]="task.name"
+               (input)="onTaskChange()"
+               class="my-inputField">
+        <input type="number"
+               placeholder="Arrival Time"
+               [(ngModel)]="task.arrivalTime"
+               (input)="onTaskChange()"
+               class="my-inputField">
+        <input type="number"
+               placeholder="Duration"
+               [(ngModel)]="task.duration"
+               (input)="onTaskChange()"
+               class="my-inputField">
+        <input type="number"
+               placeholder="Deadline"
+               [(ngModel)]="task.deadline"
+               (input)="onTaskChange()"
+               class="my-inputField">
+        <input type="number"
+               placeholder="Priority"
+               [(ngModel)]="task.priority"
+               (input)="onTaskChange()"
+               class="my-inputField">
+      </div>
+    }
+  </div>
+
+  <!-- Resource Section -->
+  <div class="mt-16">
+    <h2 class="text-3xl font-bold text-sage">Resource</h2>
+    <hr class="border-sage mt-2">
+
+    @for (resource of resources; track resource.id) {
+      <div class="flex flex-row gap-3 mt-3">
+        <input type="text"
+               placeholder="Name"
+               [(ngModel)]="resource.name"
+               (input)="onResourceChange()"
+               class="my-inputField">
+      </div>
+    }
+  </div>
+  <div class="mt-8 flex justify-end">
+  <button (click)="createScenario()"
+          class="my-button">
+    Create new Scenario
+  </button>
+</div>
+  <!-- Create Button -->
+  
+
+</div>

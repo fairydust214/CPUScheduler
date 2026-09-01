@@ -1,10 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ScenarioService } from '../services/scenario.service';
 import { Scenario as ScenarioModel } from '../models/scenario';
+import {RouterLink} from '@angular/router';
 
 @Component({
   selector: 'app-scenario',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './scenario.html',
   styleUrl: './scenario.css',
 })

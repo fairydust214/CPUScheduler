@@ -1,0 +1,6 @@
+Frontend
+	http://localhost:4200/scenario
+		Number of Tasks and Resources should be above said numbers, fix spacing
+	http://localhost:4200/createScenario
+		mouse disappears behind the last/second to last input row for either task or resource
+		implement mandatory fields, otherwise empty requests are accepted

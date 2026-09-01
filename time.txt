@@ -11,6 +11,6 @@
 |2026-08-27 |01:09:22	| Fixed Domain Structure to accomodate
 |2026-08-29 |02:14:51	| Implemented Priority Ceiling Algorithm (not tested)
 |2026-08-31 |03:32:11	| Started working on Frontend and implemented getAllScenarios
+|2026-09-01 |01:12:11	| Implemented CreateScenario webpage and createScenario functioanlity, but not error correcting
 
-
-Total: 21:03:09H
+Total: 22:15:25H
