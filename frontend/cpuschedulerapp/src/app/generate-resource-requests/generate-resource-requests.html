@@ -6,33 +6,35 @@
 
 
     <div class="mt-12">
-        <h2 class="text-3xl font-bold text-sage">Create Resources</h2>
+        <h2 class="text-3xl font-bold text-sage">Create Resource Requests</h2>
         <hr class="border-sage mt-2 pb-4">
-        <div class="flex flex-row gap-3 mt-3">
-            <input type="text" placeholder="Name" class="my-inputField w-50">
-            <input type="number" placeholder="Start Offset" class="my-inputField w-50">
-            <input type="number" placeholder="Duration" class="my-inputField w-50">
-            <select type="text" placeholder="Task" class="my-inputField w-50">
-                <option value="" disabled selected>Chose a Task</option>
-                @for (task of scenario()?.tasks?.slice().reverse() ?? []; track task.id) {
-                    <option [value]="task.id">{{ task.name }}</option>
-                }
-                
+        @for(rr of resourceRequests; track rr.id){
+            <div class="flex flex-row gap-3 mt-3">
+                <input type="text" placeholder="Name" class="my-inputField w-50" [(ngModel)]="rr.name" (ngModelChange) = "onResourceRequestChange()">
+                <input type="number" placeholder="Start Offset" class="my-inputField w-50" [(ngModel)]="rr.startOffSet" (ngModelChange) = "onResourceRequestChange()">
+                <input type="number" placeholder="Duration" class="my-inputField w-50" [(ngModel)]="rr.duration" (ngModelChange) = "onResourceRequestChange()">
+                <select type="text" placeholder="Task" class="my-inputField w-50" [class.text-gray]="rr.taskID === ''"[(ngModel)]="rr.taskID" (ngModelChange) = "onResourceRequestChange()">
+                    <option value="" disabled selected hidden>Choose a Task</option>
+                    @for (task of scenario()?.tasks?.slice().sort() ?? []; track task.id) {
+                        <option [value]="task.id" class="text-offWhite">{{ task.name }}</option>
+                    }
+                    
 
-            </select>
-            <select type="text" placeholder="Resource" class="my-inputField w-50">
-                <option value="" disabled selected>Chose a resource to use</option>
-                @for (task of scenario()?.resources?.slice().reverse() ?? []; track resource.id) {
-                    <option [value]="resource.id">{{ resource.name }}</option>
-                }
-                
+                </select>
+                <select type="text" placeholder="Resource" class="my-inputField w-fit" [class.text-gray]="rr.resourceID === ''" [(ngModel)]="rr.resourceID" (ngModelChange) = "onResourceRequestChange()">
+                    <option value="" disabled selected hidden>Choose a resource to use</option>
+                    @for (resource of scenario()?.resources?.slice().sort() ?? []; track resource.id) {
+                        <option [value]="resource.id" class="text-offWhite">{{ resource.name }}</option>
+                    }
+                    
 
-            </select>
-        </div>
-        
-        
-
-    @for (task of scenario()?.tasks; track task.id) {
-    }
+                </select>
+            </div>
+        }
+    </div>
+    <div class="flex justify-end mt-6">
+        <button class="my-button" (click)="createResourceRequests()">
+            Create Resource Requests
+        </button>
     </div>
 </div>

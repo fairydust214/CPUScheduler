@@ -21,3 +21,6 @@
 .my-inputField[type="number"] {
     -moz-appearance: textfield;
 }
+.text-gray {
+    color: #b8babb;
+}

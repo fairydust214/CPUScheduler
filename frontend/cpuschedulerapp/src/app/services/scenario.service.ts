@@ -44,4 +44,8 @@ export class ScenarioService {
     getById(id: string): Observable<Scenario>{
       return this.http.get<Scenario>(`${this.apiUrl}/${id}`)
     }
+
+    createResourceRequests(id: string, payload: any): Observable<any> {
+      return this.http.put(`${this.apiUrl}/${id}/resource-requests`, payload);
+    }
 }

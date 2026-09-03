@@ -12,5 +12,6 @@
 |2026-08-29 |02:14:51	| Implemented Priority Ceiling Algorithm (not tested)
 |2026-08-31 |03:32:11	| Started working on Frontend and implemented getAllScenarios
 |2026-09-01 |01:12:11	| Implemented CreateScenario webpage and createScenario functioanlity, but not error correcting
+|2026-09-03 |02:22:52	| Implemented Create Resource Request webpage and it works, but no error handling
 
-Total: 22:15:25H
+Total: 24:37:17H
