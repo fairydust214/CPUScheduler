@@ -40,4 +40,8 @@ export class ScenarioService {
     create(scenario: ScenarioPayload): Observable<any> {
         return this.http.post(this.apiUrl, scenario);
     }
+
+    getById(id: string): Observable<Scenario>{
+      return this.http.get<Scenario>(`${this.apiUrl}/${id}`)
+    }
 }

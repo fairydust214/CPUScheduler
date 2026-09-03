@@ -66,6 +66,7 @@ public class ResourceRequestService {
     public static ResourceRequestDTO resourceRequestEntityToDTO(ResourceRequest resourceRequest){
         return new ResourceRequestDTO(
                 resourceRequest.getId(),
+                resourceRequest.getName(),
                 resourceRequest.getResource().getId(),
                 resourceRequest.getTask().getId(),
                 resourceRequest.getStartOffset(),

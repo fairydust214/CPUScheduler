@@ -1,0 +1,29 @@
+<div class="p-8">
+
+  
+  <h1 class="text-3xl font-bold text-sage">Scenario: {{scenario()?.name}}</h1>
+  <hr class="border-sage mt-2">
+
+
+    <div class="mt-12">
+        <h2 class="text-3xl font-bold text-sage">Create Resources</h2>
+        <hr class="border-sage mt-2 pb-4">
+        <div class="flex flex-row gap-3 mt-3">
+            <input type="text" placeholder="Name" class="my-inputField w-50">
+            <input type="number" placeholder="Start Offset" class="my-inputField w-50">
+            <input type="number" placeholder="Duration" class="my-inputField w-50">
+            <select type="text" placeholder="Task" class="my-inputField w-50">
+                <option value="" disabled selected>Chose a Task</option>
+
+            </select>
+            <select name="resources" id="resources" placeholder="Resource" class="my-inputField w-70 text-offWhite">
+                <option value="" disabled selected>Chose a Resource to use</option>
+            </select>
+        </div>
+        
+        
+
+    @for (task of scenario()?.tasks; track task.id) {
+    }
+    </div>
+</div>

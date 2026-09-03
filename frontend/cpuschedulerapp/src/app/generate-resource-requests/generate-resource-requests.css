@@ -1,0 +1,23 @@
+@reference "../../styles.css";
+
+.my-div{
+    width: 25%;
+    background: var(--color-slate);
+    border-radius: var(--radius-3xl);
+}
+
+.my-central-div{
+    width: 50%;
+    background: var(--color-slate);
+    border-radius: var(--radius-3xl);
+}
+
+.my-inputField::-webkit-inner-spin-button,
+.my-inputField::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.my-inputField[type="number"] {
+    -moz-appearance: textfield;
+}

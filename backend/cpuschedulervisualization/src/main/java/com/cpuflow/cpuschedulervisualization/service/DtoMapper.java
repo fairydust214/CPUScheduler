@@ -79,6 +79,7 @@ public class DtoMapper {
                     .map(rrDto -> {
                         ResourceRequest rr = new ResourceRequest();
                         rr.setTask(task);
+                        rr.setName(rrDto.getName());
                         rr.setResource(resourceRepo.findById(rrDto.getResourceId())
                                 .orElseThrow(() -> new ResponseStatusException(
                                         HttpStatus.NOT_FOUND, "Resource not found")));
@@ -113,6 +114,7 @@ public class DtoMapper {
                     .map(rrDto -> {
                         ResourceRequest rr = new ResourceRequest();
                         rr.setResource(resource);
+                        rr.setName(rrDto.getName());
                         rr.setTask(taskRepo.findById(rrDto.getTaskID())
                                 .orElseThrow(() -> new ResponseStatusException(
                                         HttpStatus.NOT_FOUND, "Task not found")));
@@ -174,6 +176,7 @@ public class DtoMapper {
             for (ResourceRequestDTO rrDto : dto.getResourceRequests()) {
                 ResourceRequest rr = new ResourceRequest();
                 rr.setTask(task);
+                rr.setName(rrDto.getName());
                 rr.setResource(resourceRepo.findById(rrDto.getResourceId())
                         .orElseThrow(() -> new ResponseStatusException(
                                 HttpStatus.NOT_FOUND, "Resource not found")));
@@ -195,6 +198,7 @@ public class DtoMapper {
             for (ResourceRequestDTO rrDto : dto.getResourceRequestDTOList()) {
                 ResourceRequest rr = new ResourceRequest();
                 rr.setResource(resource);
+                rr.setName(rrDto.getName());
                 rr.setTask(taskRepo.findById(rrDto.getTaskID())
                         .orElseThrow(() -> new ResponseStatusException(
                                 HttpStatus.NOT_FOUND, "Task not found")));
@@ -223,6 +227,7 @@ public class DtoMapper {
                 for (ResourceRequestDTO rrDto : taskDTO.getResourceRequests()) {
                     ResourceRequest rr = new ResourceRequest();
                     rr.setTask(task);
+                    rr.setName(rrDto.getName());
                     rr.setResource(resourceRepo.findById(rrDto.getResourceId())
                             .orElseThrow(() -> new ResponseStatusException(
                                     HttpStatus.NOT_FOUND,

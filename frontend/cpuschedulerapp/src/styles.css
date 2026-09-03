@@ -29,6 +29,10 @@
   }
 }
 
+@utility my-h2-header {
+    @apply text-3xl font-bold text-offWhite font-cascadia;
+}
+
 router-outlet + * {
     display: block;
     height: 100%;

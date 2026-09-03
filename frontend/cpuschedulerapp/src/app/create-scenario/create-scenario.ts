@@ -1,6 +1,8 @@
 import { Component, ChangeDetectorRef } from '@angular/core';  // ← add ChangeDetectorRef
 import { FormsModule } from '@angular/forms';
 import { ScenarioService } from '../services/scenario.service';
+import { RouterOutlet, Router } from '@angular/router';
+import { GenerateResourceRequests } from '../generate-resource-requests/generate-resource-requests';
 
 interface TaskRow {
   id: number;
@@ -24,7 +26,7 @@ interface Notification {
 
 @Component({
   selector: 'app-create-scenario',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterOutlet],
   templateUrl: './create-scenario.html',
   styleUrl: './create-scenario.css',
 })
@@ -49,7 +51,8 @@ export class CreateScenario {
 
   constructor(
     private scenarioService: ScenarioService,
-    private cdr: ChangeDetectorRef  // ← ADD THIS
+    private cdr: ChangeDetectorRef,
+    private router: Router,
   ) {}
 
   onTaskChange(): void {
@@ -89,13 +92,15 @@ export class CreateScenario {
     const savedName = this.scenarioName;
 
     this.scenarioService.create(payload).subscribe({
-      next: () => {
+      next: (response) => {
+        const scenarioId = response.id;
         this.resetForm();                    // ← reset FIRST
         this.showNotification(               // ← notify SECOND
           `Scenario: ${savedName} created successfully!`,
           'success'
         );
-        this.cdr.detectChanges();            // ← ONE detectChanges at the end
+        this.cdr.detectChanges();
+        this.router.navigate(['/GenerateResourceRequests/', scenarioId]);
       },
       error: () => {
         this.showNotification(
@@ -104,6 +109,7 @@ export class CreateScenario {
         );
       },
     });
+    
   }
 
   private createTask(): TaskRow {

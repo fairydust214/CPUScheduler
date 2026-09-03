@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public class ResourceRequestDTO {
     private UUID id;
+    private String name;
     private UUID resourceId;
     private UUID taskID;
     private int startOffset;
@@ -13,8 +14,9 @@ public class ResourceRequestDTO {
     public ResourceRequestDTO() {
     }
 
-    public ResourceRequestDTO(UUID id, UUID resourceId, UUID taskID, int startOffset, int duration) {
+    public ResourceRequestDTO(UUID id, String name, UUID resourceId, UUID taskID, int startOffset, int duration) {
         this.id = id;
+        this.name = name;
         this.resourceId = resourceId;
         this.taskID = taskID;
         this.startOffset = startOffset;
@@ -67,5 +69,13 @@ public class ResourceRequestDTO {
 
     public void setRemainingTime(int remainingTime) {
         this.remainingTime = remainingTime;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

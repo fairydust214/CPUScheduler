@@ -13,6 +13,9 @@ public class ResourceRequest implements Serializable {
     @Column(nullable = false, updatable = false)
     private UUID id;
 
+    @Column(nullable = false)
+    private String name;
+
     @ManyToOne
     @JoinColumn(name = "task_id", nullable = false)
     private Task task;
@@ -27,8 +30,9 @@ public class ResourceRequest implements Serializable {
     @Column(nullable = false)
     private int duration;
 
-    public ResourceRequest(UUID id, Task task, Resource resource, int startOffset, int duration) {
+    public ResourceRequest(UUID id, String name, Task task, Resource resource, int startOffset, int duration) {
         this.id = id;
+        this.name = name;
         this.task = task;
         this.resource = resource;
         this.startOffset = startOffset;
@@ -77,5 +81,13 @@ public class ResourceRequest implements Serializable {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
