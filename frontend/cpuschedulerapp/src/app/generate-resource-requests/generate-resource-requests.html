@@ -14,10 +14,19 @@
             <input type="number" placeholder="Duration" class="my-inputField w-50">
             <select type="text" placeholder="Task" class="my-inputField w-50">
                 <option value="" disabled selected>Chose a Task</option>
+                @for (task of scenario()?.tasks?.slice().reverse() ?? []; track task.id) {
+                    <option [value]="task.id">{{ task.name }}</option>
+                }
+                
 
             </select>
-            <select name="resources" id="resources" placeholder="Resource" class="my-inputField w-70 text-offWhite">
-                <option value="" disabled selected>Chose a Resource to use</option>
+            <select type="text" placeholder="Resource" class="my-inputField w-50">
+                <option value="" disabled selected>Chose a resource to use</option>
+                @for (task of scenario()?.resources?.slice().reverse() ?? []; track resource.id) {
+                    <option [value]="resource.id">{{ resource.name }}</option>
+                }
+                
+
             </select>
         </div>
         
