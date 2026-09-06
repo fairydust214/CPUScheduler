@@ -113,10 +113,11 @@ export class GenerateResourceRequests {
       })),
     };
 
-    // ← Pass id and payload separately
+    
     this.scenarioService.createResourceRequests(scenarioData.id, payload).subscribe({
       next: (response) => {
         console.log('Resource requests created', response);
+        this.router.navigate(['/simulation/scenario/', scenarioData.id]);
       },
       error: (err) => {
         console.error('Failed to create resource requests', err);
