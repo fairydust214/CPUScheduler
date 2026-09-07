@@ -37,3 +37,17 @@ router-outlet + * {
     display: block;
     height: 100%;
 }
+
+@layer components {
+  .my-metric-card{
+    @apply rounded-lg overflow-hidden text-center;
+  }
+
+  .my-metric-header {
+    @apply text-sm font-cascadia bg-slate text-offWhite p-2;
+  }
+
+  .my-metric-value {
+    @apply text-2xl font-bold font-cascadia bg-sage text-dark p-4;
+  }
+}

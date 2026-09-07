@@ -1,8 +1,7 @@
 import { Component, ChangeDetectorRef } from '@angular/core';  // ← add ChangeDetectorRef
 import { FormsModule } from '@angular/forms';
 import { ScenarioService } from '../services/scenario.service';
-import { RouterOutlet, Router } from '@angular/router';
-import { GenerateResourceRequests } from '../generate-resource-requests/generate-resource-requests';
+import {Router } from '@angular/router';
 
 interface TaskRow {
   id: number;
@@ -26,7 +25,7 @@ interface Notification {
 
 @Component({
   selector: 'app-create-scenario',
-  imports: [FormsModule, RouterOutlet],
+  imports: [FormsModule],
   templateUrl: './create-scenario.html',
   styleUrl: './create-scenario.css',
 })

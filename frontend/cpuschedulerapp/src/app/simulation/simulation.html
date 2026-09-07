@@ -3,4 +3,50 @@
   
   <h1 class="text-3xl font-bold text-sage">simulating Scenario: {{scenario()?.name}}</h1>
   <hr class="border-sage mt-2">
+
+  <div class="flex justify-center mt-4">
+    <select type="text" class="my-inputField" [(ngModel)] = "selectedAlgorithm" placeholder="Simulation Algorithm">
+        <option value="" disabled selected hidden>Choose simulation algorith</option>
+        <option value="FCFS">First Come First Serve (FCFC)</option>
+        <option value="RR">Round Robin (RR)</option>
+        <option value="EDF">Earliest Deadline First (EDF)</option>
+        <option value="LST">Least Slack Time(LST)</option>
+        <option value="PC">Priority Ceiling Protocol (PCP)</option>
+    </select>
+     @if (selectedAlgorithm === 'RR'){
+            <input type="number" class="my-inputField w=32 ml-4"
+            [(ngModel)] = "quantum"
+            placeholder="Quantum"
+            min="1"/>
+        }
+    <button class="my-button ml-4" (click) = "onRun()"> Simulate </button>
+  </div>
+  @if(result()){
+    <div class="rounded-lg border border-offWhite mt-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+            <div class="my-metric-card">
+                <p class="my-metric-header">Average Waiting Time</p>
+                <p class="my-metric-value">{{result()!.avgWaitingTime| number:'1.3-3'}}</p>
+            </div>
+
+            <div class="my-metric-card">
+                <p class="my-metric-header">Average Turnaround Time</p>
+                <p class="my-metric-value">{{result()!.avgTurnaroundTime | number:'1.3-3'}}</p>
+            </div>
+
+            <div class="my-metric-card">
+                <p class="my-metric-header">CPU Utilization</p>
+                <p class="my-metric-value">{{result()!.cpuUtilization | number:'1.3-3'}}%</p>
+            </div>
+
+            <div class="my-metric-card">
+                <p class="my-metric-header">Missed Deadlines</p>
+                <p class="my-metric-value">{{result()!.missedDeaedlines || 0}}</p>
+            </div>
+        </div>
+    
+
+    </div>
+  })
+  
 </div>
