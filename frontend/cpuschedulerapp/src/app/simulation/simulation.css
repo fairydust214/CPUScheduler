@@ -1,0 +1,24 @@
+
+.chart-container {
+  scrollbar-width: thin;
+  scrollbar-color: #8fa3a0 #1a1d1b;
+}
+
+.chart-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.chart-container::-webkit-scrollbar-track {
+  background: #1a1d1b;
+  border-radius: 10px;
+}
+
+.chart-container::-webkit-scrollbar-thumb {
+  background: #8fa3a0;
+  border-radius: 10px;
+}
+
+.chart-container::-webkit-scrollbar-thumb:hover {
+  background: #39ff14;
+}
+

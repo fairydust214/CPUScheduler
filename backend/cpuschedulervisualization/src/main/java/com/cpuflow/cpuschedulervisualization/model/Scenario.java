@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Table(name = "scenarios")
 public class Scenario implements Serializable {
 
     @Id

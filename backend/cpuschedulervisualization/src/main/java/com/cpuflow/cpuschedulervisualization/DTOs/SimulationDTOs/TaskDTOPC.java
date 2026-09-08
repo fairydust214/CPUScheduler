@@ -11,18 +11,42 @@ import java.util.UUID;
 
 public class TaskDTOPC extends TaskDTO{
 
-    private List<ResourceRequestDTO> listWithResouceRequests = new LinkedList<>();
+    private List<ResourceRequestDTO> listWithResourceRequests = new LinkedList<>();
 
-    public TaskDTOPC(UUID id, String name, TaskStatus status, int remainingTime, List<ResourceRequestDTO> newListWithResouceRequests) {
+    private List<ResourceDTO> currentlyUsedResources = new LinkedList<>();
+
+    private int effectivePriority;
+
+    public TaskDTOPC(UUID id, String name, TaskStatus status, int remainingTime, int effectivePriority,
+                     List<ResourceRequestDTO> newListWithResourceRequests,
+                     List<ResourceDTO> newCurrentlyUsedResources) {
         super(id, name, status, remainingTime);
-        this.listWithResouceRequests = newListWithResouceRequests;
+        this.effectivePriority = effectivePriority;
+        this.listWithResourceRequests = newListWithResourceRequests;
+        this.currentlyUsedResources = newCurrentlyUsedResources;
     }
 
-    public List<ResourceRequestDTO> getListWithResouceRequests() {
-        return listWithResouceRequests;
+    public int getEffectivePriority() {
+        return effectivePriority;
     }
 
-    public void setListWithResouceRequests(List<ResourceRequestDTO> listWithResouceRequests) {
-        this.listWithResouceRequests = listWithResouceRequests;
+    public void setEffectivePriority(int effectivePriority) {
+        this.effectivePriority = effectivePriority;
+    }
+
+    public List<ResourceRequestDTO> getListWithResourceRequests() {
+        return listWithResourceRequests;
+    }
+
+    public void setListWithResourceRequests(List<ResourceRequestDTO> listWithResourceRequests) {
+        this.listWithResourceRequests = listWithResourceRequests;
+    }
+
+    public List<ResourceDTO> getCurrentlyUsedResources() {
+        return currentlyUsedResources;
+    }
+
+    public void setCurrentlyUsedResources(List<ResourceDTO> currentlyUsedResources) {
+        this.currentlyUsedResources = currentlyUsedResources;
     }
 }
