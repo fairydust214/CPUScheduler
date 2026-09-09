@@ -14,6 +14,6 @@
 |2026-09-01 |01:12:11	| Implemented CreateScenario webpage and createScenario functioanlity, but not error correcting
 |2026-09-03 |02:22:52	| Implemented Create Resource Request webpage and it works, but no error handling
 |2026-09-07 |01:28:28	| Work on simulation page
-|2026-09-08 |08:55:19	| Implemented Graphics and Metrics in simulation/scenario
+|2026-09-08 |08:55:19	| Implemented Graphics and Metrics in simulation/scenario, fixed bugs in Algorithms
 
 Total: 35:01:04H

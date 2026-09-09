@@ -90,7 +90,19 @@ public class ScenarioService {
     }
 
     public void delete(UUID id) {
-        this.scenarioRepo.deleteById(id);
+        Scenario scenarioToDelete = this.scenarioRepo.findById(id).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Scenario not found with id:" + id));
+
+        for(Task task: scenarioToDelete.getTasks()){
+            task.getResourceRequests().clear();
+        }
+        for(Resource resource: scenarioToDelete.getResources()){
+            resource.getResourceRequests().clear();
+        }
+        this.entityManager.flush();
+
+        this.scenarioRepo.delete(scenarioToDelete);
     }
 
     private Scenario dtoToEntity(ScenarioDTO dto) {

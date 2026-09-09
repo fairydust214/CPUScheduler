@@ -1,40 +1,124 @@
 <div class="p-8">
 
-  
+  @if (notification) {
+    <div class="fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg
+                text-offWhite font-cascadia font-bold transition-all"
+         [attr.role]="notification.type === 'error' ? 'alert' : 'status'"
+         aria-live="polite"
+         [class.bg-green-600]="notification.type === 'success'"
+         [class.bg-red-600]="notification.type === 'error'">
+      {{ notification.message }}
+    </div>
+  }
+
   <h1 class="text-3xl font-bold text-sage">Scenario: {{scenario()?.name}}</h1>
   <hr class="border-sage mt-2">
 
+  <form novalidate (ngSubmit)="createResourceRequests()">
 
-    <div class="mt-12">
-        <h2 class="text-3xl font-bold text-sage">Create Resource Requests</h2>
-        <hr class="border-sage mt-2 pb-4">
-        @for(rr of resourceRequests; track rr.id){
+    @if (errors.length > 0) {
+      <div id="request-errors" role="alert"
+           class="mt-4 rounded-lg border border-red-500 px-6 py-4">
+        <p class="font-cascadia font-bold text-offWhite">
+          Please fix {{ errors.length }} {{ errors.length === 1 ? 'problem' : 'problems' }} before creating the resource requests:
+        </p>
+        <ul class="mt-2 list-disc list-inside font-cascadia text-offWhite text-sm">
+          @for (error of errors; track error) {
+            <li>{{ error }}</li>
+          }
+        </ul>
+      </div>
+    }
+
+    <div class="mt-12" role="group" aria-labelledby="request-heading">
+        <h2 id="request-heading" class="text-3xl font-bold text-sage">Create Resource Requests</h2>
+        <hr class="border-sage mt-2">
+        <p class="mt-2 pb-4 font-cascadia text-sm text-sage">
+          At least one resource request is required, and every field of a request must be filled in.
+          The start offset counts from the start of the task, so start offset plus duration cannot reach past the end of that task.
+        </p>
+
+        @for(rr of resourceRequests; track rr.id; let i = $index){
             <div class="flex flex-row gap-3 mt-3">
-                <input type="text" placeholder="Name" class="my-inputField w-50" [(ngModel)]="rr.name" (ngModelChange) = "onResourceRequestChange()">
-                <input type="number" placeholder="Start Offset" class="my-inputField w-50" [(ngModel)]="rr.startOffSet" (ngModelChange) = "onResourceRequestChange()">
-                <input type="number" placeholder="Duration" class="my-inputField w-50" [(ngModel)]="rr.duration" (ngModelChange) = "onResourceRequestChange()">
-                <select type="text" placeholder="Task" class="my-inputField w-50" [class.text-gray]="rr.taskID === ''"[(ngModel)]="rr.taskID" (ngModelChange) = "onResourceRequestChange()">
+                <input [id]="fieldId(rr.id, 'name')"
+                       type="text"
+                       placeholder="Name"
+                       [attr.aria-label]="'Resource request ' + (i + 1) + ' name'"
+                       aria-required="true"
+                       [attr.aria-invalid]="isInvalid(fieldId(rr.id, 'name')) ? 'true' : null"
+                       [class.ring-2]="isInvalid(fieldId(rr.id, 'name'))"
+                       [class.ring-red-500]="isInvalid(fieldId(rr.id, 'name'))"
+                       class="my-inputField w-50"
+                       [(ngModel)]="rr.name"
+                       [ngModelOptions]="{standalone: true}"
+                       (ngModelChange)="onResourceRequestChange(rr)">
+                <input [id]="fieldId(rr.id, 'startOffSet')"
+                       type="number"
+                       min="0"
+                       inputmode="numeric"
+                       placeholder="Start Offset"
+                       [attr.aria-label]="'Resource request ' + (i + 1) + ' start offset'"
+                       aria-required="true"
+                       [attr.aria-invalid]="isInvalid(fieldId(rr.id, 'startOffSet')) ? 'true' : null"
+                       [class.ring-2]="isInvalid(fieldId(rr.id, 'startOffSet'))"
+                       [class.ring-red-500]="isInvalid(fieldId(rr.id, 'startOffSet'))"
+                       class="my-inputField w-50"
+                       [(ngModel)]="rr.startOffSet"
+                       [ngModelOptions]="{standalone: true}"
+                       (ngModelChange)="onResourceRequestChange(rr)">
+                <input [id]="fieldId(rr.id, 'duration')"
+                       type="number"
+                       min="1"
+                       inputmode="numeric"
+                       placeholder="Duration"
+                       [attr.aria-label]="'Resource request ' + (i + 1) + ' duration'"
+                       aria-required="true"
+                       [attr.aria-invalid]="isInvalid(fieldId(rr.id, 'duration')) ? 'true' : null"
+                       [class.ring-2]="isInvalid(fieldId(rr.id, 'duration'))"
+                       [class.ring-red-500]="isInvalid(fieldId(rr.id, 'duration'))"
+                       class="my-inputField w-50"
+                       [(ngModel)]="rr.duration"
+                       [ngModelOptions]="{standalone: true}"
+                       (ngModelChange)="onResourceRequestChange(rr)">
+                <select [id]="fieldId(rr.id, 'taskID')"
+                        [attr.aria-label]="'Resource request ' + (i + 1) + ' task'"
+                        aria-required="true"
+                        [attr.aria-invalid]="isInvalid(fieldId(rr.id, 'taskID')) ? 'true' : null"
+                        class="my-inputField w-50"
+                        [class.text-gray]="rr.taskID === ''"
+                        [class.ring-2]="isInvalid(fieldId(rr.id, 'taskID'))"
+                        [class.ring-red-500]="isInvalid(fieldId(rr.id, 'taskID'))"
+                        [(ngModel)]="rr.taskID"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="onResourceRequestChange(rr)">
                     <option value="" disabled selected hidden>Choose a Task</option>
                     @for (task of scenario()?.tasks?.slice().sort() ?? []; track task.id) {
                         <option [value]="task.id" class="text-offWhite">{{ task.name }}</option>
                     }
-                    
-
                 </select>
-                <select type="text" placeholder="Resource" class="my-inputField w-fit" [class.text-gray]="rr.resourceID === ''" [(ngModel)]="rr.resourceID" (ngModelChange) = "onResourceRequestChange()">
+                <select [id]="fieldId(rr.id, 'resourceID')"
+                        [attr.aria-label]="'Resource request ' + (i + 1) + ' resource to use'"
+                        aria-required="true"
+                        [attr.aria-invalid]="isInvalid(fieldId(rr.id, 'resourceID')) ? 'true' : null"
+                        class="my-inputField w-fit"
+                        [class.text-gray]="rr.resourceID === ''"
+                        [class.ring-2]="isInvalid(fieldId(rr.id, 'resourceID'))"
+                        [class.ring-red-500]="isInvalid(fieldId(rr.id, 'resourceID'))"
+                        [(ngModel)]="rr.resourceID"
+                        [ngModelOptions]="{standalone: true}"
+                        (ngModelChange)="onResourceRequestChange(rr)">
                     <option value="" disabled selected hidden>Choose a resource to use</option>
                     @for (resource of scenario()?.resources?.slice().sort() ?? []; track resource.id) {
                         <option [value]="resource.id" class="text-offWhite">{{ resource.name }}</option>
                     }
-                    
-
                 </select>
             </div>
         }
     </div>
     <div class="flex justify-end mt-6">
-        <button class="my-button" (click)="createResourceRequests()">
+        <button type="submit" class="my-button">
             Create Resource Requests
         </button>
     </div>
+  </form>
 </div>

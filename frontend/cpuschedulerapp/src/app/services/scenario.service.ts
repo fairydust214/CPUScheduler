@@ -48,4 +48,8 @@ export class ScenarioService {
     createResourceRequests(id: string, payload: any): Observable<any> {
       return this.http.put(`${this.apiUrl}/${id}/resource-requests`, payload);
     }
+
+    delete(id: string): Observable<void> {
+      return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    }
 }

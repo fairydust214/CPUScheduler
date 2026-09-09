@@ -10,7 +10,9 @@
       <option value="RR">Round Robin (RR)</option>
       <option value="EDF">Earliest Deadline First (EDF)</option>
       <option value="LST">Least Slack Time (LST)</option>
-      <option value="PC">Priority Ceiling Protocol (PCP)</option>
+      @if (supportsPriorityCeiling()) {
+        <option value="PC">Priority Ceiling Protocol (PCP)</option>
+      }
     </select>
     @if (selectedAlgorithm === 'RR') {
       <input type="number" class="my-inputField w-32 ml-4"
@@ -24,6 +26,31 @@
   @if (result()) {
 
     
+    <ng-template #taskOverview>
+      <div [class]="tableCard">
+        <table [class]="tableClass">
+          <thead>
+            <tr [class]="headerRow">
+              <th [class]="thGroup">Task Name</th>
+              <th [class]="thGroupSpan">Arrival Time</th>
+              <th [class]="thGroupSpan">Duration</th>
+              <th [class]="thGroupSpan">Deadline</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (task of scenario().tasks; track task.id) {
+              <tr>
+                <td [class]="tdCell">{{ task.name }}</td>
+                <td [class]="tdSubCell">{{ task.arrivalTime }}</td>
+                <td [class]="tdSubCell">{{ task.duration }}</td>
+                <td [class]="tdSubCell">{{ task.deadline }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </ng-template>
+
     <div [class]="chartBlock">
       @if (isPCP() && resources().length > 0) {
         <div [class]="resourceRow">
@@ -162,8 +189,16 @@
       <span [class]="playbackCounter">t = {{ step() }} / {{ lastStep() }}</span>
     </div>
 
+    @if (!isPCP() || !hasResourceRequests()) {
+      <div [class]="tableRowCentered">
+        <ng-container [ngTemplateOutlet]="taskOverview"></ng-container>
+      </div>
+    }
+
     @if (isPCP() && hasResourceRequests()) {
       <div [class]="tableRow">
+        <ng-container [ngTemplateOutlet]="taskOverview"></ng-container>
+
         <div [class]="tableCard">
           <table [class]="tableClass">
             <thead>
@@ -194,6 +229,7 @@
 
         <div [class]="tableCardWide">
           <table [class]="tableClass">
+            <caption [class]="tableCaption">Timeline of Resource Usage</caption>
             <thead>
               <tr [class]="headerRow">
                 <th [class]="thGroup" rowspan="2">Time</th>

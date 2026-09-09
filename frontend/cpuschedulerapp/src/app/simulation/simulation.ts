@@ -1,4 +1,4 @@
-import { DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -14,7 +14,7 @@ import { ScenarioService } from '../services/scenario.service';
 
 @Component({
   selector: 'app-simulation',
-  imports: [FormsModule, DecimalPipe],
+  imports: [FormsModule, DecimalPipe, NgTemplateOutlet],
   templateUrl: './simulation.html',
   styleUrl: './simulation.css'
 })
@@ -33,8 +33,10 @@ export class Simulation {
 
   readonly tableWrapper = 'rounded-lg border border-offWhite mt-4 p-4 overflow-visible';
   readonly tableRow = 'flex flex-wrap items-start gap-4 mt-4';
+  readonly tableRowCentered = 'flex flex-wrap items-start justify-center gap-4 mt-4';
   readonly tableCard = 'rounded-lg border border-offWhite p-4 overflow-visible';
   readonly tableCardWide = 'rounded-lg border border-offWhite p-4 overflow-visible flex-1';
+  readonly tableCaption = 'caption-top text-center font-cascadia text-lg font-bold text-sage pb-2';
   readonly thGroup = 'py-2 px-3 text-sage text-center';
   readonly thGroupSpan = 'py-2 px-3 text-sage text-center border-l border-sage/40';
   readonly thSub = 'py-2 px-3 text-sage text-center text-xs font-normal border-l border-sage/40';
@@ -309,6 +311,10 @@ export class Simulation {
   hasResourceRequests = computed(() => {
     const scenario = this.scenario();
     return (scenario?.tasks ?? []).some(task => (task.resourceRequests ?? []).length > 0);
+  });
+
+  supportsPriorityCeiling = computed(() => {
+    return this.resources().length > 0 && this.hasResourceRequests();
   });
 
   currentNode = computed(() => {

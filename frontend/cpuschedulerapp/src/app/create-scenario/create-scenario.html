@@ -1,84 +1,187 @@
 <div class="p-8">
 
- 
+
   @if (notification) {
     <div class="fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg
                 text-white font-bold transition-all"
+         [attr.role]="notification.type === 'error' ? 'alert' : 'status'"
+         aria-live="polite"
          [class.bg-green-600]="notification.type === 'success'"
          [class.bg-red-600]="notification.type === 'error'">
       {{ notification.message }}
     </div>
   }
 
-  
+
   <h1 class="text-3xl font-bold text-sage">Scenario</h1>
   <hr class="border-sage mt-2">
 
-  
-  <div class="mt-4">
-    <label class="text-lg text-sage block mb-1">Scenario Name</label>
-    <input type="text"
-           placeholder="Name of the Scenario"
-           [(ngModel)]="scenarioName"
-           class="w-96 p-2 bg-slate text-offWhite placeholder:text-offWhite/50
-                  rounded outline-none">
-  </div>
+  <form novalidate (ngSubmit)="createScenario()">
 
-  
-  <div class="mt-12">
-    <h2 class="text-3xl font-bold text-sage">Task</h2>
-    <hr class="border-sage mt-2">
-
-    @for (task of tasks; track task.id) {
-      <div class="flex flex-row gap-3 mt-3">
-        <input type="text"
-               placeholder="Name"
-               [(ngModel)]="task.name"
-               (input)="onTaskChange()"
-               class="my-inputField">
-        <input type="number"
-               placeholder="Arrival Time"
-               [(ngModel)]="task.arrivalTime"
-               (input)="onTaskChange()"
-               class="my-inputField">
-        <input type="number"
-               placeholder="Duration"
-               [(ngModel)]="task.duration"
-               (input)="onTaskChange()"
-               class="my-inputField">
-        <input type="number"
-               placeholder="Deadline"
-               [(ngModel)]="task.deadline"
-               (input)="onTaskChange()"
-               class="my-inputField">
-        <input type="number"
-               placeholder="Priority"
-               [(ngModel)]="task.priority"
-               (input)="onTaskChange()"
-               class="my-inputField">
+    @if (errors.length > 0) {
+      <div id="scenario-errors" role="alert"
+           class="mt-4 rounded-lg border border-red-500 px-6 py-4">
+        <p class="font-cascadia font-bold text-offWhite">
+          Please fix {{ errors.length }} {{ errors.length === 1 ? 'problem' : 'problems' }} before creating the scenario:
+        </p>
+        <ul class="mt-2 list-disc list-inside font-cascadia text-offWhite text-sm">
+          @for (error of errors; track error) {
+            <li>{{ error }}</li>
+          }
+        </ul>
       </div>
     }
-  </div>
 
-  
-  <div class="mt-16">
-    <h2 class="text-3xl font-bold text-sage">Resource</h2>
-    <hr class="border-sage mt-2">
+    <div class="mt-4">
+      <label for="scenario-name" class="text-lg text-sage block mb-1">
+        Scenario Name <span aria-hidden="true">*</span>
+      </label>
+      <div class="flex flex-wrap items-center gap-4">
+        <input id="scenario-name"
+               type="text"
+               placeholder="Name of the Scenario"
+               [(ngModel)]="scenarioName"
+               [ngModelOptions]="{standalone: true}"
+               (input)="onScenarioNameChange()"
+               aria-required="true"
+               [attr.aria-invalid]="isInvalid('scenario-name') ? 'true' : null"
+               [attr.aria-describedby]="errors.length > 0 ? 'scenario-errors' : null"
+               [class.ring-2]="isInvalid('scenario-name')"
+               [class.ring-red-500]="isInvalid('scenario-name')"
+               class="w-96 p-2 bg-slate text-offWhite placeholder:text-offWhite/50
+                      rounded outline-none">
 
-    @for (resource of resources; track resource.id) {
-      <div class="flex flex-row gap-3 mt-3">
-        <input type="text"
-               placeholder="Name"
-               [(ngModel)]="resource.name"
-               (input)="onResourceChange()"
-               class="my-inputField">
+        <span class="flex items-center gap-2">
+          <input id="use-priority-ceiling"
+                 type="checkbox"
+                 [(ngModel)]="usePriorityCeiling"
+                 [ngModelOptions]="{standalone: true}"
+                 (change)="onPriorityCeilingChange()"
+                 aria-controls="task-section resource-section"
+                 class="h-5 w-5 accent-sage cursor-pointer">
+          <label for="use-priority-ceiling" class="font-cascadia text-offWhite cursor-pointer">
+            scenario should also be used for Priority Ceiling Protocol
+          </label>
+        </span>
       </div>
+    </div>
+
+
+    <div id="task-section" class="mt-12" role="group" aria-labelledby="task-heading">
+      <h2 id="task-heading" class="text-3xl font-bold text-sage">Task</h2>
+      <hr class="border-sage mt-2">
+      <p id="task-hint" class="mt-2 font-cascadia text-sm text-sage">
+        At least two tasks are required. All fields are required. @if (usePriorityCeiling) { A higher priority number means a higher priority, and priority is only used by the Priority Ceiling Protocol. }
+      </p>
+
+      @for (task of tasks; track task.id; let i = $index) {
+        <div class="flex flex-row gap-3 mt-3">
+          <input [id]="fieldId('task', task.id, 'name')"
+                 type="text"
+                 placeholder="Name"
+                 [attr.aria-label]="'Task ' + (i + 1) + ' name'"
+                 aria-required="true"
+                 [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'name')) ? 'true' : null"
+                 [(ngModel)]="task.name"
+                 [ngModelOptions]="{standalone: true}"
+                 (input)="onTaskChange(task)"
+                 [class.ring-2]="isInvalid(fieldId('task', task.id, 'name'))"
+                 [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'name'))"
+                 class="my-inputField">
+          <input [id]="fieldId('task', task.id, 'arrivalTime')"
+                 type="number"
+                 min="0"
+                 inputmode="numeric"
+                 placeholder="Arrival Time"
+                 [attr.aria-label]="'Task ' + (i + 1) + ' arrival time'"
+                 aria-required="true"
+                 [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'arrivalTime')) ? 'true' : null"
+                 [(ngModel)]="task.arrivalTime"
+                 [ngModelOptions]="{standalone: true}"
+                 (input)="onTaskChange(task)"
+                 [class.ring-2]="isInvalid(fieldId('task', task.id, 'arrivalTime'))"
+                 [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'arrivalTime'))"
+                 class="my-inputField">
+          <input [id]="fieldId('task', task.id, 'duration')"
+                 type="number"
+                 min="1"
+                 inputmode="numeric"
+                 placeholder="Duration"
+                 [attr.aria-label]="'Task ' + (i + 1) + ' duration'"
+                 aria-required="true"
+                 [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'duration')) ? 'true' : null"
+                 [(ngModel)]="task.duration"
+                 [ngModelOptions]="{standalone: true}"
+                 (input)="onTaskChange(task)"
+                 [class.ring-2]="isInvalid(fieldId('task', task.id, 'duration'))"
+                 [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'duration'))"
+                 class="my-inputField">
+          <input [id]="fieldId('task', task.id, 'deadline')"
+                 type="number"
+                 min="0"
+                 inputmode="numeric"
+                 placeholder="Deadline"
+                 [attr.aria-label]="'Task ' + (i + 1) + ' deadline'"
+                 aria-required="true"
+                 [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'deadline')) ? 'true' : null"
+                 [(ngModel)]="task.deadline"
+                 [ngModelOptions]="{standalone: true}"
+                 (input)="onTaskChange(task)"
+                 [class.ring-2]="isInvalid(fieldId('task', task.id, 'deadline'))"
+                 [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'deadline'))"
+                 class="my-inputField">
+          @if (usePriorityCeiling) {
+            <input [id]="fieldId('task', task.id, 'priority')"
+                   type="number"
+                   min="0"
+                   inputmode="numeric"
+                   placeholder="Priority"
+                   [attr.aria-label]="'Task ' + (i + 1) + ' priority'"
+                   aria-required="true"
+                   [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'priority')) ? 'true' : null"
+                   [(ngModel)]="task.priority"
+                   [ngModelOptions]="{standalone: true}"
+                   (input)="onTaskChange(task)"
+                   [class.ring-2]="isInvalid(fieldId('task', task.id, 'priority'))"
+                   [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'priority'))"
+                   class="my-inputField">
+          }
+        </div>
+      }
+    </div>
+
+
+    @if (usePriorityCeiling) {
+    <div id="resource-section" class="mt-16" role="group" aria-labelledby="resource-heading">
+      <h2 id="resource-heading" class="text-3xl font-bold text-sage">Resource</h2>
+      <hr class="border-sage mt-2">
+      <p class="mt-2 font-cascadia text-sm text-sage">
+        At least one resource is required. Resources are only used by the Priority Ceiling Protocol, the other algorithms ignore them.
+      </p>
+
+      @for (resource of resources; track resource.id; let i = $index) {
+        <div class="flex flex-row gap-3 mt-3">
+          <input [id]="fieldId('resource', resource.id, 'name')"
+                 type="text"
+                 placeholder="Name"
+                 [attr.aria-label]="'Resource ' + (i + 1) + ' name'"
+                 aria-required="true"
+                 [attr.aria-invalid]="isInvalid(fieldId('resource', resource.id, 'name')) ? 'true' : null"
+                 [(ngModel)]="resource.name"
+                 [ngModelOptions]="{standalone: true}"
+                 (input)="onResourceChange(resource)"
+                 [class.ring-2]="isInvalid(fieldId('resource', resource.id, 'name'))"
+                 [class.ring-red-500]="isInvalid(fieldId('resource', resource.id, 'name'))"
+                 class="my-inputField">
+        </div>
+      }
+    </div>
     }
-  </div>
-  <div class="mt-8 flex justify-end">
-  <button (click)="createScenario()" 
-          class="my-button">
-    Create new Scenario
-  </button>
-</div>
+
+    <div class="mt-8 flex justify-end">
+      <button type="submit" class="my-button">
+        Create new Scenario
+      </button>
+    </div>
+  </form>
 </div>

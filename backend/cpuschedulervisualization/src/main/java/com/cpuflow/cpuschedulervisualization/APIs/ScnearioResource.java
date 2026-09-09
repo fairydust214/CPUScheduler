@@ -52,7 +52,7 @@ public class ScnearioResource {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        scenarioService.delete(id);
+        this.scenarioService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
