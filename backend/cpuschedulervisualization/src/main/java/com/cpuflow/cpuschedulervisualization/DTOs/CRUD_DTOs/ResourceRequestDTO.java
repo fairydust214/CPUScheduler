@@ -1,13 +1,32 @@
 package com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.util.UUID;
 
 public class ResourceRequestDTO {
     private UUID id;
+
+    @NotBlank(message = "a resource request needs a name")
+    @Size(max = 255, message = "a resource request name can be at most 255 characters long")
     private String name;
+
+    @NotNull(message = "a resource request needs a resource")
     private UUID resourceId;
+
+    @NotNull(message = "a resource request needs a task")
     private UUID taskID;
+
+    @Min(value = 0, message = "a start offset cannot be negative")
+    @Max(value = 1000, message = "a start offset can be at most 1000 ticks")
     private int startOffset;
+
+    @Min(value = 1, message = "a resource request has to last at least 1 tick")
+    @Max(value = 1000, message = "a resource request can last at most 1000 ticks")
     private int duration;
     private int remainingTime;
 

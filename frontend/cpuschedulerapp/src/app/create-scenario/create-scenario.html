@@ -40,6 +40,7 @@
         <input id="scenario-name"
                type="text"
                placeholder="Name of the Scenario"
+               maxlength="255"
                [(ngModel)]="scenarioName"
                [ngModelOptions]="{standalone: true}"
                (input)="onScenarioNameChange()"
@@ -79,6 +80,7 @@
           <input [id]="fieldId('task', task.id, 'name')"
                  type="text"
                  placeholder="Name"
+                 maxlength="255"
                  [attr.aria-label]="'Task ' + (i + 1) + ' name'"
                  aria-required="true"
                  [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'name')) ? 'true' : null"
@@ -87,10 +89,12 @@
                  (input)="onTaskChange(task)"
                  [class.ring-2]="isInvalid(fieldId('task', task.id, 'name'))"
                  [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'name'))"
-                 class="my-inputField">
+                 class="my-inputField w-50">
           <input [id]="fieldId('task', task.id, 'arrivalTime')"
                  type="number"
                  min="0"
+                 [attr.max]="MAX_TICKS"
+                 step="1"
                  inputmode="numeric"
                  placeholder="Arrival Time"
                  [attr.aria-label]="'Task ' + (i + 1) + ' arrival time'"
@@ -98,13 +102,15 @@
                  [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'arrivalTime')) ? 'true' : null"
                  [(ngModel)]="task.arrivalTime"
                  [ngModelOptions]="{standalone: true}"
-                 (input)="onTaskChange(task)"
+                 (input)="onTaskNumberChange(task, 'arrivalTime', $event)"
                  [class.ring-2]="isInvalid(fieldId('task', task.id, 'arrivalTime'))"
                  [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'arrivalTime'))"
-                 class="my-inputField">
+                 class="my-inputField w-50">
           <input [id]="fieldId('task', task.id, 'duration')"
                  type="number"
                  min="1"
+                 [attr.max]="MAX_TICKS"
+                 step="1"
                  inputmode="numeric"
                  placeholder="Duration"
                  [attr.aria-label]="'Task ' + (i + 1) + ' duration'"
@@ -112,13 +118,14 @@
                  [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'duration')) ? 'true' : null"
                  [(ngModel)]="task.duration"
                  [ngModelOptions]="{standalone: true}"
-                 (input)="onTaskChange(task)"
+                 (input)="onTaskNumberChange(task, 'duration', $event)"
                  [class.ring-2]="isInvalid(fieldId('task', task.id, 'duration'))"
                  [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'duration'))"
-                 class="my-inputField">
+                 class="my-inputField w-50">
           <input [id]="fieldId('task', task.id, 'deadline')"
                  type="number"
                  min="0"
+                 step="1"
                  inputmode="numeric"
                  placeholder="Deadline"
                  [attr.aria-label]="'Task ' + (i + 1) + ' deadline'"
@@ -126,14 +133,15 @@
                  [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'deadline')) ? 'true' : null"
                  [(ngModel)]="task.deadline"
                  [ngModelOptions]="{standalone: true}"
-                 (input)="onTaskChange(task)"
+                 (input)="onTaskNumberChange(task, 'deadline', $event)"
                  [class.ring-2]="isInvalid(fieldId('task', task.id, 'deadline'))"
                  [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'deadline'))"
-                 class="my-inputField">
+                 class="my-inputField w-50">
           @if (usePriorityCeiling) {
             <input [id]="fieldId('task', task.id, 'priority')"
                    type="number"
                    min="0"
+                   step="1"
                    inputmode="numeric"
                    placeholder="Priority"
                    [attr.aria-label]="'Task ' + (i + 1) + ' priority'"
@@ -141,10 +149,10 @@
                    [attr.aria-invalid]="isInvalid(fieldId('task', task.id, 'priority')) ? 'true' : null"
                    [(ngModel)]="task.priority"
                    [ngModelOptions]="{standalone: true}"
-                   (input)="onTaskChange(task)"
+                   (input)="onTaskNumberChange(task, 'priority', $event)"
                    [class.ring-2]="isInvalid(fieldId('task', task.id, 'priority'))"
                    [class.ring-red-500]="isInvalid(fieldId('task', task.id, 'priority'))"
-                   class="my-inputField">
+                   class="my-inputField w-50">
           }
         </div>
       }
@@ -164,6 +172,7 @@
           <input [id]="fieldId('resource', resource.id, 'name')"
                  type="text"
                  placeholder="Name"
+                 maxlength="255"
                  [attr.aria-label]="'Resource ' + (i + 1) + ' name'"
                  aria-required="true"
                  [attr.aria-invalid]="isInvalid(fieldId('resource', resource.id, 'name')) ? 'true' : null"
@@ -179,8 +188,11 @@
     }
 
     <div class="mt-8 flex justify-end">
-      <button type="submit" class="my-button">
-        Create new Scenario
+      <button type="submit"
+              class="my-button disabled:opacity-40 disabled:cursor-not-allowed"
+              [disabled]="isSubmitting"
+              [attr.aria-busy]="isSubmitting ? 'true' : null">
+        {{ isSubmitting ? 'Creating Scenario...' : 'Create new Scenario' }}
       </button>
     </div>
   </form>

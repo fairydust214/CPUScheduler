@@ -3,6 +3,9 @@ package com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs;
 import com.cpuflow.cpuschedulervisualization.model.Resource;
 import com.cpuflow.cpuschedulervisualization.model.Task;
 import jakarta.persistence.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +14,15 @@ import java.util.UUID;
 public class ScenarioDTO {
 
     private UUID id;
+
+    @NotBlank(message = "a scenario needs a name")
+    @Size(max = 255, message = "a scenario name can be at most 255 characters long")
     private String name;
+
+    @Valid
     private List<TaskDetailedDTO> tasks = new ArrayList<>();
+
+    @Valid
     private List<ResourceDetailedDTO> resources = new ArrayList<>();
 
     public ScenarioDTO() {

@@ -5,6 +5,7 @@ import com.cpuflow.cpuschedulervisualization.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,7 +35,7 @@ public class ResourceResource {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<ResourceDetailedDTO> createResource(@RequestBody ResourceDetailedDTO rDto){
+    public ResponseEntity<ResourceDetailedDTO> createResource(@Valid @RequestBody ResourceDetailedDTO rDto){
         ResourceDetailedDTO saved = this.resourceService.createResource(rDto);
         return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }

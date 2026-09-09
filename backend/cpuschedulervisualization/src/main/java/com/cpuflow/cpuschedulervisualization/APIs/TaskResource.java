@@ -5,6 +5,7 @@ import com.cpuflow.cpuschedulervisualization.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public class TaskResource {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<TaskDetailedDTO> createTask(@RequestBody TaskDetailedDTO task){
+    public ResponseEntity<TaskDetailedDTO> createTask(@Valid @RequestBody TaskDetailedDTO task){
         TaskDetailedDTO newTask = taskService.createTask(task);
         return new ResponseEntity<>(newTask, HttpStatus.CREATED);
     }
@@ -41,7 +42,7 @@ public class TaskResource {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDetailedDTO> updateTask(@PathVariable("id")UUID id, @RequestBody TaskDetailedDTO dtoTask){
+    public ResponseEntity<TaskDetailedDTO> updateTask(@PathVariable("id")UUID id, @Valid @RequestBody TaskDetailedDTO dtoTask){
         TaskDetailedDTO updatedTask = this.taskService.updateTask(id,dtoTask);
         return ResponseEntity.ok(updatedTask);
     }

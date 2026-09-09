@@ -1,4 +1,4 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ScenarioService } from '../services/scenario.service';
 import {Router } from '@angular/router';
@@ -30,6 +30,8 @@ interface Notification {
   styleUrl: './create-scenario.css',
 })
 export class CreateScenario {
+  readonly MAX_TICKS = 1000;
+
   private taskIdCounter = 0;
   private resourceIdCounter = 0;
   private notificationTimeout: any;
@@ -50,7 +52,10 @@ export class CreateScenario {
   notification: Notification | null = null;
 
   errors: string[] = [];
+  isSubmitting = false;
+
   private invalidFields = new Set<string>();
+  private badInputFields = new Set<string>();
 
   constructor(
     private scenarioService: ScenarioService,
@@ -75,6 +80,20 @@ export class CreateScenario {
     this.invalidFields.clear();
   }
 
+  onTaskNumberChange(task: TaskRow, field: string, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const id = this.fieldId('task', task.id, field);
+
+    // A number input that holds something unparsable ("-", "2e") reports an empty value to Angular,
+    // so the model looks untouched while the field visibly holds text
+    if (input.validity.badInput) {
+      this.badInputFields.add(id);
+    } else {
+      this.badInputFields.delete(id);
+    }
+    this.onTaskChange(task);
+  }
+
   onTaskChange(task: TaskRow): void {
     this.clearRowErrors('task', task.id);
     this.manageRows(this.tasks, () => this.createTask(), (t) => this.isTaskEmpty(t), task);
@@ -85,7 +104,30 @@ export class CreateScenario {
     this.manageRows(this.resources, () => this.createResource(), (r) => this.isResourceEmpty(r), resource);
   }
 
+  canDeactivate(): boolean {
+    if (!this.hasUnsavedInput()) return true;
+
+    return window.confirm('This scenario has not been created yet. Leave the page and lose what you filled in?');
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedInput()) {
+      event.preventDefault();
+    }
+  }
+
+  private hasUnsavedInput(): boolean {
+    if (this.isSubmitting) return false;
+    if (this.scenarioName.trim() !== '') return true;
+    if (this.tasks.some(t => !this.isTaskEmpty(t))) return true;
+
+    return this.resources.some(r => !this.isResourceEmpty(r));
+  }
+
   createScenario(): void {
+    if (this.isSubmitting) return;
+
     if (!this.validate()) {
       this.showNotification('Please fill in the required fields.', 'error');
       this.focusFirstInvalidField();
@@ -116,9 +158,12 @@ export class CreateScenario {
     const savedName = this.scenarioName.trim();
     const usePriorityCeiling = this.usePriorityCeiling;
 
+    this.isSubmitting = true;
+
     this.scenarioService.create(payload).subscribe({
       next: (response) => {
         const scenarioId = response.id;
+        this.isSubmitting = false;
         this.resetForm();                    // ← reset FIRST
         this.showNotification(               // ← notify SECOND
           `Scenario: ${savedName} created successfully!`,
@@ -129,11 +174,9 @@ export class CreateScenario {
           ? ['/GenerateResourceRequests/', scenarioId]
           : ['/simulation/scenario/', scenarioId]);
       },
-      error: () => {
-        this.showNotification(
-          'Failed to create scenario.',
-          'error'
-        );
+      error: (err) => {
+        this.isSubmitting = false;
+        this.showNotification(this.createErrorMessage(err), 'error');
       },
     });
 
@@ -161,14 +204,14 @@ export class CreateScenario {
       const label = 'Task ' + (index + 1);
       this.requireText(task.name, label + ': a name is required.',
         this.fieldId('task', task.id, 'name'));
-      this.requireNumber(task.arrivalTime, 0, label + ': an arrival time of 0 or more is required.',
+      this.requireNumber(task.arrivalTime, 'an arrival time', 0, this.MAX_TICKS, label,
         this.fieldId('task', task.id, 'arrivalTime'));
-      this.requireNumber(task.duration, 1, label + ': a duration of at least 1 tick is required.',
+      this.requireNumber(task.duration, 'a duration', 1, this.MAX_TICKS, label,
         this.fieldId('task', task.id, 'duration'));
-      this.requireNumber(task.deadline, 0, label + ': a deadline of 0 or more is required.',
+      this.requireNumber(task.deadline, 'a deadline', 0, null, label,
         this.fieldId('task', task.id, 'deadline'));
       if (this.usePriorityCeiling) {
-        this.requireNumber(task.priority, 0, label + ': a priority of 0 or more is required.',
+        this.requireNumber(task.priority, 'a priority', 0, null, label,
           this.fieldId('task', task.id, 'priority'));
       }
     });
@@ -195,6 +238,16 @@ export class CreateScenario {
     return this.errors.length === 0;
   }
 
+  private createErrorMessage(err: any): string {
+    // status 0 means the answer never arrived, so the scenario may well have been created anyway
+    if (err?.status === 0) {
+      return 'No answer from the server. The scenario may still have been created, check the scenario list before you try again.';
+    }
+
+    const detail = err?.error?.message ?? err?.error?.detail;
+    return detail ? 'Failed to create scenario: ' + detail : 'Failed to create scenario.';
+  }
+
   private requireText(value: string, error: string, fieldId: string): void {
     if (value.trim() === '') {
       this.errors.push(error);
@@ -202,11 +255,32 @@ export class CreateScenario {
     }
   }
 
-  private requireNumber(value: number | null, minimum: number, error: string, fieldId: string): void {
-    if (value == null || value < minimum) {
-      this.errors.push(error);
-      this.invalidFields.add(fieldId);
+  private requireNumber(value: number | null, what: string, minimum: number,
+                        maximum: number | null, label: string, fieldId: string): void {
+    if (this.badInputFields.has(fieldId)) {
+      this.addError(label + ': ' + what + ' has to be a whole number.', fieldId);
+      return;
     }
+    if (value == null) {
+      this.addError(label + ': ' + what + ' is required.', fieldId);
+      return;
+    }
+    if (!Number.isInteger(value)) {
+      this.addError(label + ': ' + what + ' has to be a whole number, without a decimal point.', fieldId);
+      return;
+    }
+    if (value < minimum) {
+      this.addError(label + ': ' + what + ' cannot be lower than ' + minimum + '.', fieldId);
+      return;
+    }
+    if (maximum != null && value > maximum) {
+      this.addError(label + ': ' + what + ' can be at most ' + maximum + '.', fieldId);
+    }
+  }
+
+  private addError(message: string, fieldId: string): void {
+    this.errors.push(message);
+    this.invalidFields.add(fieldId);
   }
 
   private rejectDuplicateNames<T extends { id: number; name: string }>(
@@ -340,5 +414,6 @@ export class CreateScenario {
     this.usePriorityCeiling = false;
     this.errors = [];
     this.invalidFields.clear();
+    this.badInputFields.clear();
   }
 }

@@ -11,6 +11,19 @@
     --color-offWhite: #f4f5f4;
 
     --font-cascadia: "Cascadia Code", monospace;
+
+    --animate-queue-enter: queue-enter 300ms ease-out;
+
+    @keyframes queue-enter {
+        from {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
 }
 
 @layer components {

@@ -46,7 +46,8 @@ export class Simulation {
   readonly headerRow = 'border-b border-sage';
   readonly chartBlock = 'w-fit max-w-full mx-auto';
   readonly chartWrapper = 'chart-container rounded-lg border border-offWhite mt-4 overflow-x-auto w-fit max-w-full mx-auto px-10 py-4';
-  readonly resourceRow = 'w-0 min-w-full flex flex-wrap items-center gap-2 mt-4';
+  readonly aboveChartRow = 'w-0 min-w-full flex flex-wrap items-end gap-4 mt-4';
+  readonly resourceRow = 'flex flex-wrap items-center gap-2';
   readonly resourceHeader = 'text-offWhite font-cascadia font-semibold mr-1';
   readonly resourcePillBase = 'rounded-full border px-4 py-1 text-sm font-cascadia transition-colors duration-200';
   readonly resourcePillInUse = 'bg-sand text-offWhite border-sand';
@@ -68,6 +69,21 @@ export class Simulation {
     'disabled:opacity-40 disabled:hover:bg-sand disabled:cursor-not-allowed'
   ].join(' ');
   readonly playbackCounter = 'text-offWhite text-sm font-cascadia ml-2';
+
+  readonly queueWrapper = 'flex flex-col items-end ml-auto';
+  readonly queueLabel = 'font-cascadia text-offWhite font-semibold mb-1';
+  readonly queueBlock = 'transition-all duration-300 animate-queue-enter';
+
+  readonly QUEUE_HEIGHT = 70;
+  readonly QUEUE_MIN_WIDTH = 340;
+  readonly QUEUE_PAD = 16;
+  readonly QUEUE_GAP = 14;
+  readonly QUEUE_BLOCK_W = 70;
+  readonly QUEUE_BLOCK_H = 34;
+  readonly QUEUE_BLOCK_Y = 18;
+  readonly QUEUE_TOP_LINE = 10;
+  readonly QUEUE_BOTTOM_LINE = 60;
+  readonly QUEUE_ARROW_STEP = 48;
 
   readonly CELL_W = 40;
   readonly CELL_H = 40;
@@ -335,6 +351,31 @@ export class Simulation {
     return ids;
   });
 
+  queuedTasks = computed(() => {
+    return this.currentNode()?.currentTimeline ?? [];
+  });
+
+  queueCapacity = computed(() => {
+    return Math.max(this.scenario().tasks.length, this.queuedTasks().length, 1);
+  });
+
+  queueWidth = computed(() => {
+    const count = this.queueCapacity();
+    const needed = this.QUEUE_PAD * 2
+      + count * this.QUEUE_BLOCK_W
+      + Math.max(0, count - 1) * this.QUEUE_GAP;
+
+    return Math.max(this.QUEUE_MIN_WIDTH, needed);
+  });
+
+  queueArrows = computed(() => {
+    const positions: number[] = [];
+    for (let x = 20; x < this.queueWidth() - 12; x += this.QUEUE_ARROW_STEP) {
+      positions.push(x);
+    }
+    return positions;
+  });
+
   chartHeight = computed(() => {
     return (
       this.MARGIN_TOP +
@@ -362,6 +403,16 @@ export class Simulation {
         }
       });
     }
+  }
+
+  queueBlockX(index: number): number {
+    return this.queueWidth() - this.QUEUE_PAD
+      - (index + 1) * this.QUEUE_BLOCK_W
+      - index * this.QUEUE_GAP;
+  }
+
+  arrowPath(x: number, y: number): string {
+    return 'M ' + x + ' ' + (y - 5) + ' L ' + (x + 7) + ' ' + y + ' L ' + x + ' ' + (y + 5);
   }
 
   getTaskIndex(name: string): number {

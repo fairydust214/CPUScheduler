@@ -52,14 +52,55 @@
     </ng-template>
 
     <div [class]="chartBlock">
-      @if (isPCP() && resources().length > 0) {
-        <div [class]="resourceRow">
-          <span [class]="resourceHeader">Resources:</span>
-          @for (resource of resources(); track resource.id) {
-            <span [class]="resourcePillClass(resource.id)">{{ resource.name }}</span>
-          }
+      <div [class]="aboveChartRow">
+        @if (isPCP() && resources().length > 0) {
+          <div [class]="resourceRow">
+            <span [class]="resourceHeader">Resources:</span>
+            @for (resource of resources(); track resource.id) {
+              <span [class]="resourcePillClass(resource.id)">{{ resource.name }}</span>
+            }
+          </div>
+        }
+        <div [class]="queueWrapper">
+          <span [class]="queueLabel">Queue</span>
+          <svg [attr.width]="queueWidth()" [attr.height]="QUEUE_HEIGHT">
+
+            <line x1="0" [attr.y1]="QUEUE_TOP_LINE"
+                  [attr.x2]="queueWidth()" [attr.y2]="QUEUE_TOP_LINE"
+                  stroke="#bec0b1" stroke-width="2"/>
+            <line x1="0" [attr.y1]="QUEUE_BOTTOM_LINE"
+                  [attr.x2]="queueWidth()" [attr.y2]="QUEUE_BOTTOM_LINE"
+                  stroke="#bec0b1" stroke-width="2"/>
+
+            @for (x of queueArrows(); track x) {
+              <path [attr.d]="arrowPath(x, QUEUE_TOP_LINE)"
+                    fill="none" stroke="#bec0b1" stroke-width="2"/>
+              <path [attr.d]="arrowPath(x, QUEUE_BOTTOM_LINE)"
+                    fill="none" stroke="#bec0b1" stroke-width="2"/>
+            }
+
+            @for (task of queuedTasks(); track task.id; let i = $index) {
+              <rect [class]="queueBlock"
+                    [attr.x]="queueBlockX(i)"
+                    [attr.y]="QUEUE_BLOCK_Y"
+                    [attr.width]="QUEUE_BLOCK_W"
+                    [attr.height]="QUEUE_BLOCK_H"
+                    [attr.fill]="getTaskColor(task.name)"
+                    stroke="#f4f5f4" stroke-width="1">
+                <title>{{ task.name }} - {{ task.status }}</title>
+              </rect>
+              <text [class]="queueBlock"
+                    [attr.x]="queueBlockX(i) + QUEUE_BLOCK_W / 2"
+                    [attr.y]="QUEUE_BLOCK_Y + QUEUE_BLOCK_H / 2 + 4"
+                    text-anchor="middle" fill="#31353f" font-size="12"
+                    font-family="'Cascadia Code', monospace">
+                {{ task.name }}
+              </text>
+            }
+          </svg>
         </div>
-      }
+      </div>
+
       <div [class]="chartWrapper">
         <svg [class]="chartSvg" [attr.width]="chartWidth()" [attr.height]="chartHeight()">
 

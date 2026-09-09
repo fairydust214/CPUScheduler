@@ -1,18 +1,39 @@
 package com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs;
 
 import com.cpuflow.cpuschedulervisualization.model.TaskStatus;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 import java.util.UUID;
 
 public class TaskDetailedDTO {
     private UUID id;
+
+    @NotBlank(message = "a task needs a name")
+    @Size(max = 255, message = "a task name can be at most 255 characters long")
     private String name;
+
     private TaskStatus status;
+
+    @Min(value = 0, message = "an arrival time cannot be negative")
+    @Max(value = 1000, message = "an arrival time can be at most 1000 ticks")
     private int arrivalTime;
+
+    @Min(value = 1, message = "a duration has to be at least 1 tick")
+    @Max(value = 1000, message = "a duration can be at most 1000 ticks")
     private int duration;
+
+    @Min(value = 0, message = "a deadline cannot be negative")
     private int deadline;
+
+    @Min(value = 0, message = "a priority cannot be negative")
     private Integer priority;
+
+    @Valid
     private List<ResourceRequestDTO> resourceRequests;
     private UUID scenarioDTOID;
 

@@ -300,3 +300,28 @@ VALUES (
     UUID_TO_BIN('00000000-0000-0000-0000-00000000b603'),
     UUID_TO_BIN('00000000-0000-0000-0000-00000000a602')
 );
+INSERT IGNORE INTO tasks (
+    id,
+    name,
+    arrival_time,
+    duration,
+    deadline,
+    priority,
+    scenario_id
+)
+WITH RECURSIVE task_numbers AS (
+    SELECT 1 AS n
+    UNION ALL
+    SELECT n + 1
+    FROM task_numbers
+    WHERE n < 100
+)
+SELECT
+    UUID_TO_BIN(UUID()),
+    CONCAT('T', n),
+    1,
+    10,
+    1000,
+    1,
+    UUID_TO_BIN('00000000-0000-0000-0000-000000000006')
+FROM task_numbers;
