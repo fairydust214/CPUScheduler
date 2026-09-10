@@ -29,6 +29,7 @@
     <ng-template #taskOverview>
       <div [class]="tableCard">
         <table [class]="tableClass">
+          <caption [class]="tableCaption">Task Information</caption>
           <thead>
             <tr [class]="headerRow">
               <th [class]="thGroup">Task Name</th>
@@ -180,6 +181,41 @@
             }
           }
 
+          @for (mark of visibleInterruptions(); track mark.key) {
+            <line
+              [attr.x1]="mark.x"
+              [attr.y1]="mark.y1"
+              [attr.x2]="mark.x"
+              [attr.y2]="mark.y2"
+              stroke="#ff4d4f" stroke-width="3" stroke-linecap="round">
+              <title>{{ mark.tooltip }}</title>
+            </line>
+          }
+
+          @for (mark of visibleFinishMarks(); track mark.key) {
+            <g>
+              <title>{{ mark.tooltip }}</title>
+              <line
+                [attr.x1]="mark.poleX"
+                [attr.y1]="mark.top"
+                [attr.x2]="mark.poleX"
+                [attr.y2]="mark.top + FLAG_POLE_H"
+                stroke="#f4f5f4" stroke-width="1.5" stroke-linecap="round"/>
+              <rect
+                [attr.x]="mark.flagX"
+                [attr.y]="mark.top"
+                [attr.width]="FLAG_W"
+                [attr.height]="FLAG_H"
+                fill="#f4f5f4"/>
+              @for (square of FLAG_CHECKERS; track square) {
+                <rect
+                  [attr.x]="mark.flagX + square.dx"
+                  [attr.y]="mark.top + square.dy"
+                  width="3" height="3" fill="#31353f"/>
+              }
+            </g>
+          }
+
           @if (result()!.totalTime > 0) {
             <line
               [attr.x1]="playheadX()"
@@ -207,6 +243,26 @@
             <div [class]="legendItem">
               <div [class]="legendInheritedSwatch"></div>
               <span [class]="legendText">running at an inherited priority</span>
+            </div>
+          }
+          @if (hasInterruptions()) {
+            <div [class]="legendItem">
+              <div [class]="legendInterruptSwatch"></div>
+              <span [class]="legendText">task interrupted before it finished</span>
+            </div>
+          }
+          @if (hasFinishMarks()) {
+            <div [class]="legendItem">
+              <svg width="13" height="16" aria-hidden="true">
+                <line x1="1" y1="1" x2="1" y2="14"
+                      stroke="#f4f5f4" stroke-width="1.5" stroke-linecap="round"/>
+                <rect x="2" y="1" [attr.width]="FLAG_W" [attr.height]="FLAG_H" fill="#f4f5f4"/>
+                @for (square of FLAG_CHECKERS; track square) {
+                  <rect [attr.x]="2 + square.dx" [attr.y]="1 + square.dy"
+                        width="3" height="3" fill="#31353f"/>
+                }
+              </svg>
+              <span [class]="legendText">task finished</span>
             </div>
           }
         </div>
@@ -248,10 +304,10 @@
 
         <div [class]="tableCard">
           <table [class]="tableClass">
+            <caption [class]="tableCaption">Resource Requests</caption>
             <thead>
               <tr [class]="headerRow">
-                <th [class]="thGroup" rowspan="2">Task</th>
-                <th [class]="thGroupSpan" colspan="4">Resource Request</th>
+                <th [class]="thGroup" rowspan="2">belongs to Task</th>
               </tr>
               <tr [class]="headerRow">
                 <th [class]="thSub">Name</th>
@@ -276,7 +332,7 @@
 
         <div [class]="tableCardWide">
           <table [class]="tableClass">
-            <caption [class]="tableCaption">Timeline of Resource Usage</caption>
+            <caption [class]="tableCaption">Timeline</caption>
             <thead>
               <tr [class]="headerRow">
                 <th [class]="thGroup" rowspan="2">Time</th>

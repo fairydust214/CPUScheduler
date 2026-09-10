@@ -1,3 +1,4 @@
+Programming
 |    DATE   |  Time     |Comment
 |2026-08-07 |02:00:00   | Implemented Basic Backend Structure
 |2026-08-09 |02:00:00   | Implemented Basic Frontend Structure
@@ -16,5 +17,7 @@
 |2026-09-07 |01:28:28	| Work on simulation page
 |2026-09-08 |08:55:19	| Implemented Graphics and Metrics in simulation/scenario, fixed bugs in Algorithms
 |2026-09-09 |01:51:33	| Error handeling for the frontend
+|2026-09-10 |02:05:10	| Finished programming plus some final touches (finishing flag and better headers)
 
-Total: 36:52:37H
+
+Total: 38:57:47H

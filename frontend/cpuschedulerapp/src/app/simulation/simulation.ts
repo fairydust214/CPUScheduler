@@ -60,6 +60,7 @@ export class Simulation {
   readonly legendText = 'text-offWhite text-sm font-cascadia';
   readonly legendPriority = 'text-sage';
   readonly legendInheritedSwatch = 'w-4 h-4 rounded border-2 border-dashed border-[#39FF14]';
+  readonly legendInterruptSwatch = 'w-1 h-4 rounded-sm bg-[#ff4d4f] mx-1.5';
   readonly controlsWrapper = 'flex justify-center mt-4';
 
   readonly playbackWrapper = 'flex flex-wrap items-center justify-center gap-3 mt-4';
@@ -91,6 +92,17 @@ export class Simulation {
   readonly MARGIN_TOP = 20;
   readonly MARGIN_BOTTOM = 40;
   readonly MARGIN_RIGHT = 20;
+
+  /** the little checkered flag that marks the tick a task ran out of work in */
+  readonly FLAG_W = 9;
+  readonly FLAG_H = 6;
+  readonly FLAG_POLE_H = 13;
+  readonly FLAG_INSET = 3;
+  readonly FLAG_CHECKERS = [
+    { dx: 0, dy: 0 },
+    { dx: 6, dy: 0 },
+    { dx: 3, dy: 3 }
+  ];
 
   readonly TASK_COLORS = [
     '#c0b89b',
@@ -242,6 +254,115 @@ export class Simulation {
   playheadX = computed(() => {
     return this.marginLeft() + (this.step() + 1) * this.CELL_W;
   });
+
+  /**
+   * boundaries where a task was cut off before it was done and another task took the CPU over.
+   * a task that stepped aside because it got blocked on a resource is not an interruption,
+   * so it is skipped here just like the backend skips it in the preemption count.
+   */
+  interruptions = computed(() => {
+    const result = this.result();
+    if (!result) return [];
+
+    const marks: {
+      key: string;
+      time: number;
+      x: number;
+      y1: number;
+      y2: number;
+      tooltip: string;
+    }[] = [];
+
+    for (let i = 0; i < result.timeline.length - 1; i++) {
+      const node = result.timeline[i];
+      const next = result.timeline[i + 1];
+
+      const interrupted = node.runningTask;
+      const takesOver = next.runningTask;
+
+      if (!interrupted || !takesOver) continue;
+      if (interrupted.id === takesOver.id) continue;
+      if (interrupted.remainingTime <= 0) continue;
+
+      const blocked = (next.currentTimeline ?? []).some(
+        task => task.id === interrupted.id && task.status === 'BLOCKED'
+      );
+      if (blocked) continue;
+
+      const interruptedRow = this.getYIndex(node);
+      const takesOverRow = this.getYIndex(next);
+      if (interruptedRow < 0 || takesOverRow < 0) continue;
+
+      marks.push({
+        key: `${node.time}-${interrupted.id}-${takesOver.id}`,
+        time: next.time,
+        x: this.marginLeft() + next.time * this.CELL_W,
+        y1: this.MARGIN_TOP + Math.min(interruptedRow, takesOverRow) * this.CELL_H,
+        y2: this.MARGIN_TOP + (Math.max(interruptedRow, takesOverRow) + 1) * this.CELL_H,
+        tooltip: `${interrupted.name} interrupted by ${takesOver.name} @ t=${next.time}`
+          + ` - ${interrupted.remainingTime} tick(s) left`
+      });
+    }
+    return marks;
+  });
+
+  visibleInterruptions = computed(() => {
+    const step = this.step();
+    return this.interruptions().filter(mark => mark.time <= step);
+  });
+
+  hasInterruptions = computed(() => this.interruptions().length > 0);
+
+  /**
+   * the tick a task ran its last unit of work in. remainingTime on a node is what is left
+   * after that tick ran, so a zero there means the task completed at node.time + 1.
+   */
+  finishMarks = computed(() => {
+    const result = this.result();
+    if (!result) return [];
+
+    const marks: {
+      key: string;
+      time: number;
+      poleX: number;
+      flagX: number;
+      top: number;
+      tooltip: string;
+    }[] = [];
+
+    const alreadyFinished = new Set<string>();
+
+    for (const node of result.timeline) {
+      const task = node.runningTask;
+      if (!task || task.remainingTime > 0) continue;
+      if (alreadyFinished.has(task.id)) continue;
+
+      const row = this.getYIndex(node);
+      if (row < 0) continue;
+
+      alreadyFinished.add(task.id);
+
+      const cellRight = this.marginLeft() + (node.time + 1) * this.CELL_W;
+      const poleX = cellRight - this.FLAG_INSET - this.FLAG_W;
+
+      marks.push({
+        key: `${task.id}-${node.time}`,
+        time: node.time,
+        poleX,
+        flagX: poleX + 1,
+        top: this.MARGIN_TOP + row * this.CELL_H + this.FLAG_INSET,
+        tooltip: `${task.name} finished @ t=${node.time + 1}`
+      });
+    }
+    return marks;
+  });
+
+  visibleFinishMarks = computed(() => {
+    const step = this.step();
+    return this.finishMarks().filter(mark => mark.time <= step);
+  });
+
+  hasFinishMarks = computed(() => this.finishMarks().length > 0);
 
   resources = computed(() => {
     const scenario = this.scenario();
