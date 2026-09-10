@@ -15,5 +15,6 @@
 |2026-09-03 |02:22:52	| Implemented Create Resource Request webpage and it works, but no error handling
 |2026-09-07 |01:28:28	| Work on simulation page
 |2026-09-08 |08:55:19	| Implemented Graphics and Metrics in simulation/scenario, fixed bugs in Algorithms
+|2026-09-09 |01:51:33	| Error handeling for the frontend
 
-Total: 35:01:04H
+Total: 36:52:37H

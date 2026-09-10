@@ -204,7 +204,7 @@ export class GenerateResourceRequests {
 
     if (row.startOffSet + row.duration > task.duration) {
       this.addError(label + ': it runs to tick ' + (row.startOffSet + row.duration)
-        + ' of ' + task.name + ', which only runs for ' + task.duration + ' ticks.',
+        + ' of ' + task.name + ', which only runs for ' + task.duration + ' ticks. ',
         this.fieldId(row.id, 'startOffSet'));
       this.invalidFields.add(this.fieldId(row.id, 'duration'));
     }

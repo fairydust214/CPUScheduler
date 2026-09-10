@@ -37,6 +37,7 @@ export class Simulation {
   readonly tableCard = 'rounded-lg border border-offWhite p-4 overflow-visible';
   readonly tableCardWide = 'rounded-lg border border-offWhite p-4 overflow-visible flex-1';
   readonly tableCaption = 'caption-top text-center font-cascadia text-lg font-bold text-sage pb-2';
+  readonly timelineRowActive = 'bg-slate/20 transition-colors duration-200';
   readonly thGroup = 'py-2 px-3 text-sage text-center';
   readonly thGroupSpan = 'py-2 px-3 text-sage text-center border-l border-sage/40';
   readonly thSub = 'py-2 px-3 text-sage text-center text-xs font-normal border-l border-sage/40';
@@ -121,6 +122,7 @@ export class Simulation {
 
   step = signal(0);
   isPlaying = signal(false);
+  hasPlayed = signal(false);
 
   private readonly PLAYBACK_INTERVAL_MS = 500;
   private playbackTimer: ReturnType<typeof setInterval> | null = null;
@@ -305,15 +307,28 @@ export class Simulation {
 
     for (const node of result?.timeline ?? []) {
       const task = node.runningTask;
-      if (!task || !task.listWithResourceRequests) continue;
+      const held = (task?.listWithResourceRequests ?? [])
+        .filter(request => request.taskID === task!.id);
 
-      for (const request of task.listWithResourceRequests) {
-        if (request.taskID !== task.id) continue;
+      // every tick gets a row, so a task that runs without holding anything still shows up
+      if (held.length === 0) {
+        rows.push({
+          key: `${node.time}-idle`,
+          time: node.time,
+          taskName: task?.name ?? '-',
+          requestName: '-',
+          startOffset: '-',
+          duration: '-',
+          resourceName: '-'
+        });
+        continue;
+      }
 
+      for (const request of held) {
         rows.push({
           key: `${node.time}-${request.id}`,
           time: node.time,
-          taskName: task.name,
+          taskName: task!.name,
           requestName: request.name ?? '-',
           startOffset: String(request.startOffset),
           duration: String(request.duration),
@@ -456,6 +471,12 @@ export class Simulation {
     return this.getTaskIndex(task.name);
   }
 
+  timelineRowClass(time: number): string {
+    if (!this.hasPlayed()) return '';
+
+    return time === this.step() ? this.timelineRowActive : '';
+  }
+
   blockTooltip(node: TimeNodeDTO): string {
     const task = node.runningTask;
     if (!task) return '';
@@ -505,6 +526,7 @@ export class Simulation {
       this.step.set(0);
     }
 
+    this.hasPlayed.set(true);
     this.isPlaying.set(true);
     this.playbackTimer = setInterval(() => {
       if (this.step() >= this.lastStep()) {
@@ -537,6 +559,7 @@ export class Simulation {
       .subscribe({
         next: (simulationResult) => {
           this.pause();
+          this.hasPlayed.set(false);
           this.result.set(simulationResult);
           this.step.set(this.lastStep());
         },

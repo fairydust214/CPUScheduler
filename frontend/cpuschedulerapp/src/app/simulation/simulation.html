@@ -35,6 +35,9 @@
               <th [class]="thGroupSpan">Arrival Time</th>
               <th [class]="thGroupSpan">Duration</th>
               <th [class]="thGroupSpan">Deadline</th>
+              @if (isPCP()) {
+                <th [class]="thGroupSpan">Priority</th>
+              }
             </tr>
           </thead>
           <tbody>
@@ -44,6 +47,9 @@
                 <td [class]="tdSubCell">{{ task.arrivalTime }}</td>
                 <td [class]="tdSubCell">{{ task.duration }}</td>
                 <td [class]="tdSubCell">{{ task.deadline }}</td>
+                @if (isPCP()) {
+                  <td [class]="tdSubCell">{{ task.priority ?? '-' }}</td>
+                }
               </tr>
             }
           </tbody>
@@ -286,7 +292,7 @@
             </thead>
             <tbody>
               @for (row of timelineRequestRows(); track row.key) {
-                <tr>
+                <tr [class]="timelineRowClass(row.time)">
                   <td [class]="tdCell">{{ row.time }}</td>
                   <td [class]="tdSubCell">{{ row.taskName }}</td>
                   <td [class]="tdSubCell">{{ row.requestName }}</td>
