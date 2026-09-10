@@ -20,4 +20,11 @@ Programming
 |2026-09-10 |02:05:10	| Finished programming plus some final touches (finishing flag and better headers)
 
 
-Total: 38:57:47H
+	Programming total: 38:57:47H
+
+Writting
+|2026-09-10 |01:07:10	| Wrote the informative abstract
+
+	Writting total: 01:07:10
+
+Total: 40:04:57H
