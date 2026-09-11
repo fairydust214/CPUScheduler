@@ -181,6 +181,28 @@
             }
           }
 
+          @for (strip of taskStrips(); track strip.key) {
+            <g pointer-events="none">
+              <rect
+                [attr.x]="strip.x"
+                [attr.y]="strip.y"
+                [attr.width]="strip.width"
+                [attr.height]="STRIP_H"
+                [attr.fill]="STRIP_FILL"
+                [attr.fill-opacity]="STRIP_OPACITY"
+                rx="2"/>
+              <text
+                [attr.x]="strip.textX"
+                [attr.y]="strip.textY"
+                [attr.font-size]="strip.fontSize"
+                [attr.fill]="STRIP_TEXT"
+                text-anchor="middle"
+                font-family="'Cascadia Code', monospace">
+                {{ strip.label }}
+              </text>
+            </g>
+          }
+
           @for (mark of visibleInterruptions(); track mark.key) {
             <line
               [attr.x1]="mark.x"

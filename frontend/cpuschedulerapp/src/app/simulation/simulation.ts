@@ -104,6 +104,21 @@ export class Simulation {
     { dx: 3, dy: 3 }
   ];
 
+  /** the pale name strip laid over a task's blocks so the chart reads without telling colors apart */
+  readonly STRIP_H = 16;
+  readonly STRIP_INSET = 2;
+  readonly STRIP_PAD_X = 3;
+  readonly STRIP_FONT_MAX = 11;
+  readonly STRIP_FONT_MIN = 8;
+  readonly STRIP_CHAR_W = 0.62;
+  readonly STRIP_FILL = '#e6e7e3';
+  readonly STRIP_TEXT = '#31353f';
+  readonly STRIP_OPACITY = 0.6;
+  readonly STRIP_MAX_CHARS = 10;
+  /** one glyph, not three periods: in a monospace font each period would take a whole cell
+   *  and the dots would drift away from the name they belong to */
+  readonly STRIP_ELLIPSIS = '\u2026';
+
   readonly TASK_COLORS = [
     '#c0b89b',
     '#8fa3a0',
@@ -364,6 +379,72 @@ export class Simulation {
 
   hasFinishMarks = computed(() => this.finishMarks().length > 0);
 
+  /**
+   * a pale strip with the task name on it, laid over the middle of the blocks a task runs in.
+   * one strip per uninterrupted run in a row, so the chart can be followed without
+   * telling the task colors apart.
+   */
+  taskStrips = computed(() => {
+    const nodes = this.visibleTimeline();
+
+    const strips: {
+      key: string;
+      x: number;
+      y: number;
+      width: number;
+      textX: number;
+      textY: number;
+      label: string;
+      fontSize: number;
+    }[] = [];
+
+    let i = 0;
+    while (i < nodes.length) {
+      const node = nodes[i];
+      const task = node.runningTask;
+      const row = this.getYIndex(node);
+
+      if (!task || row < 0) {
+        i++;
+        continue;
+      }
+
+      // walk on as long as the same task keeps the CPU on the same row without a gap
+      let end = i;
+      while (end + 1 < nodes.length) {
+        const next = nodes[end + 1];
+        if (!next.runningTask) break;
+        if (next.runningTask.id !== task.id) break;
+        if (next.time !== nodes[end].time + 1) break;
+        if (this.getYIndex(next) !== row) break;
+        end++;
+      }
+
+      const span = nodes[end].time - node.time + 1;
+      const runX = this.marginLeft() + node.time * this.CELL_W + this.STRIP_INSET;
+      const runWidth = span * this.CELL_W - this.STRIP_INSET * 2;
+      const y = this.MARGIN_TOP + row * this.CELL_H + (this.CELL_H - this.STRIP_H) / 2;
+
+      // the strip is only as wide as the name needs it to be, sitting in the middle of the run
+      const fitted = this.fitStripLabel(task.name, runWidth);
+      const centerX = runX + runWidth / 2;
+
+      strips.push({
+        key: `${task.id}-${node.time}-${row}`,
+        x: centerX - fitted.width / 2,
+        y,
+        width: fitted.width,
+        textX: centerX,
+        textY: y + this.STRIP_H / 2 + Math.round(fitted.fontSize * 0.36),
+        label: fitted.label,
+        fontSize: fitted.fontSize
+      });
+
+      i = end + 1;
+    }
+    return strips;
+  });
+
   resources = computed(() => {
     const scenario = this.scenario();
     return scenario?.resources ?? [];
@@ -609,6 +690,48 @@ export class Simulation {
       return `${task.name} @ t=${node.time} - inherited priority ${this.getRunPriority(node)}, own priority ${base}`;
     }
     return `${task.name} @ t=${node.time} - priority ${this.getRunPriority(node)}`;
+  }
+
+  /**
+   * cuts a name longer than STRIP_MAX_CHARS down to that many characters and marks the cut with
+   * STRIP_ELLIPSIS, then shrinks the font - and only if that is still not enough, clips further -
+   * so the label fits the run it labels. also reports how wide the strip has to be to hold it.
+   * the strip lets hovers through, so the full name is still on the block tooltip underneath.
+   */
+  private fitStripLabel(
+    name: string,
+    maxWidth: number
+  ): { label: string; fontSize: number; width: number } {
+    const wanted = name.length > this.STRIP_MAX_CHARS
+      ? name.slice(0, this.STRIP_MAX_CHARS) + this.STRIP_ELLIPSIS
+      : name;
+
+    const available = maxWidth - this.STRIP_PAD_X * 2;
+    if (available <= 0) {
+      return { label: '', fontSize: this.STRIP_FONT_MIN, width: 0 };
+    }
+
+    let fontSize = this.STRIP_FONT_MAX;
+    while (
+      fontSize > this.STRIP_FONT_MIN &&
+      wanted.length * fontSize * this.STRIP_CHAR_W > available
+    ) {
+      fontSize--;
+    }
+
+    const maxChars = Math.floor(available / (fontSize * this.STRIP_CHAR_W));
+    if (maxChars <= 0) return { label: '', fontSize, width: 0 };
+
+    let label = wanted;
+    if (wanted.length > maxChars) {
+      // too narrow a run even at the smallest font, so clip the name but keep the marker
+      label = maxChars <= this.STRIP_ELLIPSIS.length
+        ? name.slice(0, maxChars)
+        : name.slice(0, maxChars - this.STRIP_ELLIPSIS.length) + this.STRIP_ELLIPSIS;
+    }
+
+    const width = Math.round(label.length * fontSize * this.STRIP_CHAR_W) + this.STRIP_PAD_X * 2;
+    return { label, fontSize, width };
   }
 
   resourcePillClass(resourceId: string): string {
