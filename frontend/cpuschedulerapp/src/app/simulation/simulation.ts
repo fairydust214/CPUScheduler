@@ -36,13 +36,16 @@ export class Simulation {
   readonly tableRowCentered = 'flex flex-wrap items-start justify-center gap-4 mt-4';
   readonly tableCard = 'rounded-lg border border-offWhite p-4 overflow-visible';
   readonly tableCardWide = 'rounded-lg border border-offWhite p-4 overflow-visible flex-1';
+  readonly tableCardFit = 'rounded-lg border border-offWhite p-4 overflow-visible w-max max-w-full';
   readonly tableCaption = 'caption-top text-center font-cascadia text-lg font-bold text-sage pb-2';
+  readonly tableSubCaption = 'block text-sm font-normal text-offWhite pt-1 whitespace-nowrap';
   readonly timelineRowActive = 'bg-slate/20 transition-colors duration-200';
   readonly thGroup = 'py-2 px-3 text-sage text-center';
   readonly thGroupSpan = 'py-2 px-3 text-sage text-center border-l border-sage/40';
   readonly thSub = 'py-2 px-3 text-sage text-center text-xs font-normal border-l border-sage/40';
   readonly tdCell = 'py-2 px-3 text-center';
   readonly tdSubCell = 'py-2 px-3 text-center border-l border-sage/40';
+  readonly tdSlackNegative = 'py-2 px-3 text-center border-l border-sage/40 text-[#ff4d4f]';
   readonly tableClass = 'w-full text-offWhite font-cascadia text-sm border-collapse';
   readonly headerRow = 'border-b border-sage';
   readonly chartBlock = 'w-fit max-w-full mx-auto';
@@ -119,6 +122,9 @@ export class Simulation {
    *  and the dots would drift away from the name they belong to */
   readonly STRIP_ELLIPSIS = '\u2026';
 
+  /** what a task that has not arrived yet, or is already done, gets instead of a slack value */
+  readonly SLACK_IDLE = '-';
+
   readonly TASK_COLORS = [
     '#c0b89b',
     '#8fa3a0',
@@ -157,6 +163,11 @@ export class Simulation {
   isPCP = computed(() => {
     const r = this.result();
     return r !== null && r !== undefined && r.algorithm === 'PC';
+  });
+
+  isLST = computed(() => {
+    const r = this.result();
+    return r !== null && r !== undefined && r.algorithm === 'LST';
   });
 
   marginLeft = computed(() => {
@@ -538,6 +549,54 @@ export class Simulation {
         });
       }
     }
+    return rows;
+  });
+
+  /**
+   * every task's slack at each tick, read the way LST reads it:
+   * slack = deadline - time - remaining time, taken before the tick runs.
+   * a node only carries the running task and the queue, so the remaining time is rebuilt
+   * from the timeline itself - the ticks a task already spent running before this one.
+   * a task that has not arrived yet or has already finished has no slack the scheduler
+   * would weigh, so it gets SLACK_IDLE instead of a number.
+   */
+  slackRows = computed(() => {
+    const result = this.result();
+    const tasks = this.scenario().tasks;
+    if (!result || tasks.length === 0) return [];
+
+    const ticksRun = new Map<string, number>();
+    for (const task of tasks) {
+      ticksRun.set(task.id, 0);
+    }
+
+    const rows: {
+      time: number;
+      cells: { key: string; text: string; negative: boolean }[];
+    }[] = [];
+
+    for (const node of result.timeline) {
+      const cells = tasks.map(task => {
+        const remaining = task.duration - (ticksRun.get(task.id) ?? 0);
+        const active = task.arrivalTime <= node.time && remaining > 0;
+        const slack = task.deadline - node.time - remaining;
+
+        return {
+          key: `${node.time}-${task.id}`,
+          text: active ? String(slack) : this.SLACK_IDLE,
+          negative: active && slack < 0
+        };
+      });
+
+      rows.push({ time: node.time, cells });
+
+      // counted after the row so the row keeps the state the scheduler decided on
+      const running = node.runningTask;
+      if (running) {
+        ticksRun.set(running.id, (ticksRun.get(running.id) ?? 0) + 1);
+      }
+    }
+
     return rows;
   });
 
