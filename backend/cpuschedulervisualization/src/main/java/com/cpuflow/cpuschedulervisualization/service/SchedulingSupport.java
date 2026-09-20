@@ -25,8 +25,8 @@ final class SchedulingSupport {
 
     static final Comparator<Task> LEAST_SLACK_ORDER =
             Comparator.comparingInt((Task task) -> task.getDeadline() - task.getRemainingTime())
-                    .thenComparingInt(Task::getDeadline)
                     .thenComparingInt(Task::getArrivalTime)
+                    .thenComparingInt(Task::getDeadline)
                     .thenComparing(STABLE_ORDER);
 
     private SchedulingSupport() {
