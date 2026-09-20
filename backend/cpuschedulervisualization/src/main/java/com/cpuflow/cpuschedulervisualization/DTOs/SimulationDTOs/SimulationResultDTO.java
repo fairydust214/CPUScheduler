@@ -10,6 +10,7 @@ public class SimulationResultDTO {
     // Metrics
     private Double avgWaitingTime;
     private Double avgTurnaroundTime;
+    private Double avgResponseTime;
     private Double cpuUtilization;
     private Integer missedDeadlines;
 
@@ -56,6 +57,14 @@ public class SimulationResultDTO {
 
     public void setAvgTurnaroundTime(Double avgTurnaroundTime) {
         this.avgTurnaroundTime = avgTurnaroundTime;
+    }
+
+    public Double getAvgResponseTime() {
+        return avgResponseTime;
+    }
+
+    public void setAvgResponseTime(Double avgResponseTime) {
+        this.avgResponseTime = avgResponseTime;
     }
 
     public Double getCpuUtilization() {

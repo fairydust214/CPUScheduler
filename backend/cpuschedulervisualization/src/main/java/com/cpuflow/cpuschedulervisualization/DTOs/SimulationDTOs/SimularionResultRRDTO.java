@@ -4,7 +4,6 @@ public class SimularionResultRRDTO extends SimulationResultDTO{
 
     private Integer contextSwitches;
     private Integer preemptions;
-    private Double avgResponseTime;
     private Integer quantum;
 
     public SimularionResultRRDTO() {
@@ -25,14 +24,6 @@ public class SimularionResultRRDTO extends SimulationResultDTO{
 
     public void setPreemptions(Integer preemptions) {
         this.preemptions = preemptions;
-    }
-
-    public Double getAvgResponseTime() {
-        return avgResponseTime;
-    }
-
-    public void setAvgResponseTime(Double avgResponseTime) {
-        this.avgResponseTime = avgResponseTime;
     }
 
     public Integer getQuantum() {

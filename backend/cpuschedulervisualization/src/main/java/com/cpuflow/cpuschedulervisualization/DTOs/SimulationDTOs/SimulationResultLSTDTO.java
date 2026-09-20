@@ -6,7 +6,6 @@ public class SimulationResultLSTDTO extends SimulationResultDTO{
     private Integer preemptions;
     private Integer negativeSlackEvents;
     private Integer negativeSlackTasks;
-    private Double avgResponseTime;
 
     public SimulationResultLSTDTO() {
         super();
@@ -42,13 +41,5 @@ public class SimulationResultLSTDTO extends SimulationResultDTO{
 
     public void setNegativeSlackTasks(Integer negativeSlackTasks) {
         this.negativeSlackTasks = negativeSlackTasks;
-    }
-
-    public Double getAvgResponseTime() {
-        return avgResponseTime;
-    }
-
-    public void setAvgResponseTime(Double avgResponseTime) {
-        this.avgResponseTime = avgResponseTime;
     }
 }

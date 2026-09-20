@@ -5,7 +5,6 @@ public class SimulationResultPCDTO extends SimulationResultDTO {
     private int preemptions;
     private int blockingEvents;
     private int priorityInheritances;
-    private double avgResponseTime;
 
     public int getContextSwitches() { return contextSwitches; }
     public void setContextSwitches(int contextSwitches) { this.contextSwitches = contextSwitches; }
@@ -18,7 +17,4 @@ public class SimulationResultPCDTO extends SimulationResultDTO {
 
     public int getPriorityInheritances() { return priorityInheritances; }
     public void setPriorityInheritances(int priorityInheritances) { this.priorityInheritances = priorityInheritances; }
-
-    public double getAvgResponseTime() { return avgResponseTime; }
-    public void setAvgResponseTime(double avgResponseTime) { this.avgResponseTime = avgResponseTime; }
 }

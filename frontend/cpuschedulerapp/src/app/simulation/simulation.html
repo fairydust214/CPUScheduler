@@ -344,6 +344,13 @@
               </th>
             }
 
+            @if (result()!.avgResponseTime !== undefined) {
+              <th [class]="thMetric">
+                Average Response Time
+                <span [class]="metricTooltip">Average time from arrival to first execution. Σ(first run − arrival) / number of tasks</span>
+              </th>
+            }
+
             @if (result()!.cpuUtilization !== null) {
               <th [class]="thMetric">
                 CPU Utilization
@@ -376,13 +383,6 @@
               <th [class]="thMetric">
                 Preemptions
                 <span [class]="metricTooltip">Times a running task was interrupted before completion by a higher priority task or quantum expiration</span>
-              </th>
-            }
-
-            @if (result()!.avgResponseTime !== undefined) {
-              <th [class]="thMetric">
-                Average Response Time
-                <span [class]="metricTooltip">Average time from arrival to first execution. Σ(first run − arrival) / number of tasks</span>
               </th>
             }
 
@@ -426,6 +426,9 @@
             @if (result()!.avgTurnaroundTime !== null) {
               <td [class]="tdMetric">{{ result()!.avgTurnaroundTime | number:'1.3-3' }}</td>
             }
+            @if (result()!.avgResponseTime !== undefined) {
+              <td [class]="tdMetric">{{ result()!.avgResponseTime | number:'1.3-3' }}</td>
+            }
             @if (result()!.cpuUtilization !== null) {
               <td [class]="tdMetric">{{ result()!.cpuUtilization | number:'1.3-3' }}%</td>
             }
@@ -440,9 +443,6 @@
             }
             @if (result()!.preemptions !== undefined) {
               <td [class]="tdMetric">{{ result()!.preemptions }}</td>
-            }
-            @if (result()!.avgResponseTime !== undefined) {
-              <td [class]="tdMetric">{{ result()!.avgResponseTime | number:'1.3-3' }}</td>
             }
             @if (result()!.blockingEvents !== undefined) {
               <td [class]="tdMetric">{{ result()!.blockingEvents }}</td>

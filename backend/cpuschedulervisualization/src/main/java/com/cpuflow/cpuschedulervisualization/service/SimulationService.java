@@ -85,6 +85,7 @@ public class SimulationService {
 
         int totalWaitingTime = 0;
         int totalTurnaround = 0;
+        int totalResponseTime = 0;
         int missedDeadlines = 0;
 
         for(Task task: allTasks){
@@ -92,6 +93,7 @@ public class SimulationService {
             int completion = completionTimes.getOrDefault(task.getId(), 0);
             totalWaitingTime += (start - task.getArrivalTime());
             totalTurnaround += (completion - task.getArrivalTime());
+            totalResponseTime += (start - task.getArrivalTime());
 
             if(completion > task.getDeadline()){
                 missedDeadlines++;
@@ -99,7 +101,7 @@ public class SimulationService {
         }
 
         this.calculateTelemetry(resultDTO, allTasks.size(), currentTime, utilizedTime, timeline,
-                totalWaitingTime, totalTurnaround, missedDeadlines);
+                totalWaitingTime, totalTurnaround, totalResponseTime, missedDeadlines);
         return resultDTO;
 
     }
@@ -210,11 +212,10 @@ public class SimulationService {
 
 
         this.calculateTelemetry(resultDTO,numberOfTasks,currentTime,busyTicks,timeLine,
-                totalWaiting,totalTurnaround,missedDeadlines);
+                totalWaiting,totalTurnaround,totalResponseTime,missedDeadlines);
 
         resultDTO.setContextSwitches(contextSwitches);
         resultDTO.setPreemptions(preemptions);
-        resultDTO.setAvgResponseTime(SchedulingSupport.average(totalResponseTime, numberOfTasks));
 
         return resultDTO;
 
@@ -288,12 +289,15 @@ public class SimulationService {
 
         int totalWaiting = 0;
         int totalTurnaround = 0;
+        int totalResponseTime = 0;
         int missedDeadlines = 0;
 
         for(Task task:allTasks){
+            int start = startTimes.getOrDefault(task.getId(),0);
             int completion = completionTimes.getOrDefault(task.getId(),0);
             totalWaiting += (completion -task.getArrivalTime() - task.getDuration());
             totalTurnaround += (completion - task.getArrivalTime());
+            totalResponseTime += (start - task.getArrivalTime());
 
             if(completion > task.getDeadline()){
                 missedDeadlines++;
@@ -302,7 +306,7 @@ public class SimulationService {
         int numberOfTasks = allTasks.size();
 
         this.calculateTelemetry(resultDTO,numberOfTasks,currentTime,utilizedTime,
-                timeLine,totalWaiting,totalTurnaround,missedDeadlines);
+                timeLine,totalWaiting,totalTurnaround,totalResponseTime,missedDeadlines);
 
         return resultDTO;
 
@@ -422,12 +426,11 @@ public class SimulationService {
 
         int numberOfTasks = allTasks.size();
         this.calculateTelemetry(resultDTO, numberOfTasks, currentTime,utilizedTime,timeLine,totalWaiting,
-                totalTurnaround,missedDeadlines);
+                totalTurnaround,totalResponseTime,missedDeadlines);
         resultDTO.setContextSwitches(contextSwitches);
         resultDTO.setPreemptions(preemptions);
         resultDTO.setNegativeSlackEvents(negativeSlackEvents);
         resultDTO.setNegativeSlackTasks(negativeSlackTasks.size());
-        resultDTO.setAvgResponseTime(SchedulingSupport.average(totalResponseTime, numberOfTasks));
         return resultDTO;
     }
 
@@ -448,9 +451,8 @@ public class SimulationService {
 
         List<Task> allTasks = new ArrayList<>(scenario.getTasks());
         if(allTasks.isEmpty()){
-            this.calculateTelemetry(resultDTO, 1, 0, 0, new ArrayList<>(), 0, 0, 0);
+            this.calculateTelemetry(resultDTO, 1, 0, 0, new ArrayList<>(), 0, 0, 0, 0);
             resultDTO.setCpuUtilization(0.0);
-            resultDTO.setAvgResponseTime(0.0);
             return resultDTO;
         }
 
@@ -567,13 +569,12 @@ public class SimulationService {
 
         int numberOfTasks = allTasks.size();
         this.calculateTelemetry(resultDTO, numberOfTasks, currentTime, busyTicks, timeline,
-                totalWaiting, totalTurnaround, missedDeadlines);
+                totalWaiting, totalTurnaround, totalResponseTime, missedDeadlines);
 
         resultDTO.setContextSwitches(contextSwitches);
         resultDTO.setPreemptions(preemptions);
         resultDTO.setBlockingEvents(state.blockingEvents);
         resultDTO.setPriorityInheritances(state.priorityInheritances);
-        resultDTO.setAvgResponseTime((double) totalResponseTime / numberOfTasks);
 
         return resultDTO;
     }
@@ -899,11 +900,13 @@ public class SimulationService {
                                     List<TimeNodeDTO> timeLine,
                                     int totalWaiting,
                                     int totalTurnaround,
+                                    int totalResponseTime,
                                     int missedDeadlines){
         resultDTO.setTotalTime(currentTime);
         resultDTO.setTimeline(timeLine);
         resultDTO.setAvgWaitingTime(SchedulingSupport.average(totalWaiting, numberOfTasks));
         resultDTO.setAvgTurnaroundTime(SchedulingSupport.average(totalTurnaround, numberOfTasks));
+        resultDTO.setAvgResponseTime(SchedulingSupport.average(totalResponseTime, numberOfTasks));
         resultDTO.setCpuUtilization(SchedulingSupport.percentage(busyTicks, currentTime));
         resultDTO.setMissedDeadlines(missedDeadlines);
     }
