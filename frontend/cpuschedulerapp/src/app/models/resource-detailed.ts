@@ -5,8 +5,5 @@ export interface ResourceDetailed {
     name: string;
     priorityCealing: number | null;
     resourceRequestDTOList: ResourceRequest[];
-    status: string;
     scenarioDTOID: string;
 }
-
-export type ResourceStatus = "TAKEN" | "FREE";

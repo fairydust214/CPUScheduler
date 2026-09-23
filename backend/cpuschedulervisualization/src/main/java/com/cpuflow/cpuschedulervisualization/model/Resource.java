@@ -27,17 +27,13 @@ public class Resource implements Serializable {
     @JoinColumn(name = "scenario_id", nullable = false)
     private Scenario scenario;
 
-    @Transient
-    private ResourceStatus status;
 
     public Resource(UUID id, String name, Integer priorityCeiling, List<ResourceRequest> resourceRequests,
-                    ResourceStatus status,
                     Scenario scenario) {
         this.id = id;
         this.name = name;
         this.priorityCeiling = priorityCeiling;
         this.resourceRequests = resourceRequests;
-        this.status = status;
         this.scenario = scenario;
     }
 
@@ -75,14 +71,6 @@ public class Resource implements Serializable {
 
     public void setResourceRequests(List<ResourceRequest> resourceRequests) {
         this.resourceRequests = resourceRequests;
-    }
-
-    public ResourceStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ResourceStatus status) {
-        this.status = status;
     }
 
     public Scenario getScenario() {

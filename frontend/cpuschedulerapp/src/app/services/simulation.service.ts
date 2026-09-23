@@ -3,7 +3,6 @@ import {HttpClient, HttpParams} from '@angular/common/http'
 import { Observable } from 'rxjs';
 import { TaskStatus } from '../models/task-detailed';
 import { ResourceRequest } from '../models/resource-request';
-import { ResourceStatus } from '../models/resource-detailed';
 
 
 export type SimulationType = 'LST' | 'EDF' | 'FCFS' | 'RR' | 'PC';
@@ -17,7 +16,6 @@ export interface TimeNodeDTO {
 export interface ResourceDTO {
     id: string;
     name: string;
-    status: ResourceStatus;
     heldByTaskId: string | null;
 }
 

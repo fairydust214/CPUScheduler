@@ -106,7 +106,6 @@ public class DtoMapper {
         Resource resource = new Resource();
         resource.setName(dto.getName());
         resource.setPriorityCeiling(dto.getPriorityCealing());
-        resource.setStatus(dto.getStatus());
         resource.setScenario(scenario);
 
         if (dto.getResourceRequestDTOList() != null) {
@@ -145,7 +144,6 @@ public class DtoMapper {
         rDto.setId(resource.getId());
         rDto.setName(resource.getName());
         rDto.setPriorityCealing(resource.getPriorityCeiling());
-        rDto.setStatus(resource.getStatus());
         rDto.setScenarioDTOID(resource.getScenario().getId());
 
 

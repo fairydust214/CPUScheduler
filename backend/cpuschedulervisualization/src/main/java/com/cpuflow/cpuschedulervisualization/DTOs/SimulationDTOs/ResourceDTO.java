@@ -7,16 +7,14 @@ import java.util.UUID;
 public class ResourceDTO {
     private UUID id;
     private String name;
-    private ResourceStatus status;
     private UUID heldByTaskId;
 
     public ResourceDTO() {
     }
 
-    public ResourceDTO(UUID id, String name, ResourceStatus status, UUID heldByTaskId) {
+    public ResourceDTO(UUID id, String name, UUID heldByTaskId) {
         this.id = id;
         this.name = name;
-        this.status = status;
         this.heldByTaskId = heldByTaskId;
     }
 
@@ -34,14 +32,6 @@ public class ResourceDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public ResourceStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(ResourceStatus status) {
-        this.status = status;
     }
 
     public UUID getHeldByTaskId() {

@@ -687,7 +687,6 @@ public class SimulationService {
     private void grantLock(PcpState state, Task task, ResourceRequest request){
         Resource resource = request.getResource();
 
-        resource.setStatus(ResourceStatus.TAKEN);
         state.locks.put(resource.getId(), new ResourceLock(task, request, resource));
         state.grantedRequests.add(request.getId());
 
@@ -724,8 +723,6 @@ public class SimulationService {
         state.locks.remove(lock.resource.getId());
         state.grantedRequests.remove(lock.request.getId());
         state.liveRequests.remove(lock.request.getId());
-        lock.resource.setStatus(ResourceStatus.FREE);
-
         this.recomputeEffectivePriorities(state);
     }
 
@@ -805,7 +802,6 @@ public class SimulationService {
         }
 
         for(Resource resource: scenario.getResources()){
-            resource.setStatus(ResourceStatus.FREE);
             Integer ceiling = ceilings.get(resource.getId());
             if(ceiling != null){
                 resource.setPriorityCeiling(ceiling);
@@ -836,8 +832,7 @@ public class SimulationService {
 
         for(ResourceLock lock: state.locks.values()){
             if(lock.holder.getId().equals(task.getId())){
-                held.add(new ResourceDTO(lock.resource.getId(), lock.resource.getName(),
-                        lock.resource.getStatus(), task.getId()));
+                held.add(new ResourceDTO(lock.resource.getId(), lock.resource.getName(), task.getId()));
             }
         }
         return held;
