@@ -150,7 +150,6 @@ export class CreateScenario {
       resources: this.usePriorityCeiling ? filledResources.map(r => ({
         name: r.name.trim(),
         priorityCealing: r.priorityCealing,
-        status: 'FREE',
         resourceRequestDTOList: [],
       })) : [],
     };

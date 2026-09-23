@@ -4,6 +4,5 @@ export interface Resource {
     name: string;
     arrivalTime: number;
     deadline: number;
-    duration: number;
-    status: string | null;     
+    duration: number; 
 }

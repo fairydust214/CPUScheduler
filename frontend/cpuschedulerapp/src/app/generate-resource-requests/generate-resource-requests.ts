@@ -134,7 +134,6 @@ export class GenerateResourceRequests {
             startOffset: rr.startOffSet,
             duration: rr.duration,
           })),
-        status: null,
         scenarioDTOID: scenarioData.id,
       })),
     };

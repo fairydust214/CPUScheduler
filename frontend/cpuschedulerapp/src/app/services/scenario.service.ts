@@ -18,7 +18,6 @@ export interface ScenarioPayload {
   }[];
   resources: {
     name: string;
-    status: string;
     resourceRequestDTOList: any[];
   }[];
 }
