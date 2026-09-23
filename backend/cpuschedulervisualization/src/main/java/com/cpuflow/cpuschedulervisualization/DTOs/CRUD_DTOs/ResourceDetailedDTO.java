@@ -1,6 +1,5 @@
 package com.cpuflow.cpuschedulervisualization.DTOs.CRUD_DTOs;
 
-import com.cpuflow.cpuschedulervisualization.model.ResourceStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

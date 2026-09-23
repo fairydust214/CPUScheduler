@@ -1,6 +1,5 @@
 package com.cpuflow.cpuschedulervisualization.DTOs.SimulationDTOs;
 
-import com.cpuflow.cpuschedulervisualization.model.ResourceStatus;
 
 import java.util.UUID;
 
