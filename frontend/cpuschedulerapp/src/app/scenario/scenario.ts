@@ -32,7 +32,11 @@ export class Scenario implements OnInit{
     console.log("Scenario initialized");
     this.scenarioService.getAll().subscribe({
       next: (scenarios) => {
-        this.scenarios.set(scenarios);
+        this.scenarios.set(
+          [...scenarios].sort((a, b) =>
+            a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })
+          )
+        );
         console.log("Scenarios :", scenarios);
       },
       error: (error)=>{

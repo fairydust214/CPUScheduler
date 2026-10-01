@@ -28,7 +28,10 @@ Writting
 |2026-09-19 |03:00:00	| Wrote Introduction to Chapter.2 and FCFS
 |2026-09-20 |03:17:49	| Wrote LST, EDF, RoundRobin (RR is missing graph and example)
 |2026-09-21 |04:22:01 	| Finished RR and PCP
+|2026-09-23 |03:17:58	| Wrote Chapter 3
+|2026-09-25 |02:12:37	| Wrote Chapter 4
+|2026-09-26	|02:37:55	| Corrected P1-P7
 
-	Writting total: 15:30:14
+	Writting total: 23:38:40
 
-Total: 54:27:01H
+Total: 62:35:31H
