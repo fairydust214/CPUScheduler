@@ -34,7 +34,8 @@ Writting
 |2026-09-27	|01:30:00	| Finished draft 1
 |2026-10-01 |05:35:39	| Implemented feedback from Prof.; finished draft.2
 |2026-10-03 |02:20:47	| Draft.3
+|2026-10-04 |04:14:31 	| Finished Draft.3
 
-	Writting total: 33:05:06
+	Writting total: 37:29:37
 
-Total: 72:01:57H
+Total: 76:16:28H
